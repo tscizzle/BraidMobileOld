@@ -23,8 +23,8 @@ export default class BraidMobile extends Component {
     return (
       <View style={mainStyles.mainContainer}>
         <Navbar loggedInUser={this.state.loggedInUser} />
-        <Content navigateTo={scene => this.navigateTo(scene)}
-                 setLoggedInUser={user => this.setLoggedInUser(user)}
+        <Content navigateTo={this.navigateTo}
+                 setLoggedInUser={this.setLoggedInUser}
                  loggedInUser={this.state.loggedInUser}
                  currentScene={this.state.currentScene}/>
       </View>
@@ -56,12 +56,12 @@ export class Content extends Component {
     return (
       <View style={mainStyles.content}>
         {this.props.currentScene === 'auth' &&
-          <Auth navigateTo={scene => this.props.navigateTo(scene)}
-                setLoggedInUser={user => this.props.setLoggedInUser(user)} />
+          <Auth navigateTo={this.props.navigateTo}
+                setLoggedInUser={this.props.setLoggedInUser} />
         }
         {this.props.currentScene === 'settings' &&
-          <Settings navigateTo={scene => this.props.navigateTo(scene)}
-                    setLoggedInUser={user => this.props.setLoggedInUser(user)}
+          <Settings navigateTo={this.props.navigateTo}
+                    setLoggedInUser={this.props.setLoggedInUser}
                     loggedInUser={this.props.loggedInUser} />
         }
       </View>

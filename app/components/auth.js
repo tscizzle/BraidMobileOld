@@ -21,17 +21,18 @@ export default class Auth extends Component {
     };
   }
 
-  typeIntoUsername(usernameInput) {
+  typeIntoUsername = usernameInput => {
     this.setState({loginForm: {...this.state.loginForm, username: usernameInput}});
   }
 
-  typeIntoPassword(passwordInput) {
+  typeIntoPassword = passwordInput => {
     this.setState({loginForm: {...this.state.loginForm, password: passwordInput}});
   }
 
-  pressLogin() {
+  pressLogin = () => {
     this.setState({loginDisabled: true});
-    fetch(Config.BRAID_SERVER_URL + '/login', {
+    const loginRoute = Config.BRAID_SERVER_URL + '/login';
+    fetch(loginRoute, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -79,7 +80,7 @@ export default class Auth extends Component {
         <Text style={authStyles.errorMessage}>{this.state.loginError}</Text>
         <Button style={[braidStyles.button, braidStyles.primaryButton]}
                 styleDisabled={braidStyles.disabledButton}
-                onPress={() => this.pressLogin()}
+                onPress={this.pressLogin}
                 disabled={this.state.loginDisabled}>
           Login
         </Button>

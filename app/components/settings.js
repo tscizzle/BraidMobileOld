@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, PushNotificationIOS } from 'react-native';
+import { StyleSheet, View, Text, Linking, PushNotificationIOS } from 'react-native';
 import Button from 'react-native-button';
 import Config from 'react-native-config';
 
@@ -9,40 +9,46 @@ import braidStyles from '../styles.js';
 export default class Settings extends Component {
   constructor(props) {
     super(props);
-    PushNotificationIOS.addEventListener('register', token => {
-      this.checkNotificationsEnabled();
-      const userId = this.props.loggedInUser._id;
-      if (userId) {
-        const deviceInfo = {
-          device_id: token,
-          platform: 'ios',
-        };
-        fetch(Config.BRAID_SERVER_URL + '/api/addDeviceIDForUser/' + userId, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(deviceInfo),
-        })
-          .then(addDeviceIDRes => {
-            console.log('addDeviceIDRes', addDeviceIDRes);
-          });
-      }
-    });
-    this.checkNotificationsEnabled();
+    this.state = {notificationsEnabled: true};
+  }
+
+  componentWillMount() {
     PushNotificationIOS.requestPermissions({alert: 1, badge: 1});
+    PushNotificationIOS.addEventListener('register', this.onNotificationRegister);
+    this.refreshNotificationsEnabled();
   }
 
-  checkNotificationsEnabled() {
+  componentWillUnmount() {
+    PushNotificationIOS.removeEventListener('register', this.onNotificationRegister);
+  }
+
+  onNotificationRegister = token => {
+    this.refreshNotificationsEnabled();
+    const userId = this.props.loggedInUser._id;
+    if (userId) {
+      const addDeviceRoute = Config.BRAID_SERVER_URL + '/api/addDeviceIDForUser/' + userId;
+      const deviceInfo = {device_id: token, platform: 'ios'};
+      fetch(addDeviceRoute, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(deviceInfo),
+      })
+        .then(addDeviceIDRes => {
+          console.log('addDeviceIDRes', addDeviceIDRes);
+        });
+    }
+  }
+
+  refreshNotificationsEnabled = () => {
     PushNotificationIOS.checkPermissions(permissions => {
-      if (!(permissions.alert && permissions.badge)) {
-        this.setState({notificationsEnabled: false});
-      }
+      this.setState({notificationsEnabled: permissions.alert && permissions.badge});
     });
   }
 
-  pressLogout() {
+  pressLogout = () => {
     fetch(Config.BRAID_SERVER_URL + '/logout')
       .then(logoutRes => {
         if (logoutRes.status === 200) {
@@ -53,11 +59,17 @@ export default class Settings extends Component {
   }
 
   render() {
+    const notificationsNotEnabled = !this.state.notificationsEnabled;
     return (
-      <View style={styles.settingsContainer}>
-        {/* TODO: if notifications are not enabled, display a message saying to enable them in the phone's Settings (the Notifications section) */}
-        <Button style={[braidStyles.button, braidStyles.primaryButton, styles.settingsButton]}
-                onPress={() => this.pressLogout()}>
+      <View style={settingsStyles.settingsContainer}>
+        {notificationsNotEnabled &&
+          <Button style={[braidStyles.button, braidStyles.primaryButton, settingsStyles.settingsButton]}
+                  onPress={() => Linking.openURL('app-settings:')}>
+            Enable Notifications
+          </Button>
+        }
+        <Button style={[braidStyles.button, braidStyles.primaryButton, settingsStyles.settingsButton]}
+                onPress={this.pressLogout}>
           Logout
         </Button>
       </View>
@@ -71,7 +83,7 @@ Settings.propTypes = {
   loggedInUser: React.PropTypes.object.isRequired,
 };
 
-const styles = StyleSheet.create({
+const settingsStyles = StyleSheet.create({
   settingsContainer: {
     flex: 1,
   },
