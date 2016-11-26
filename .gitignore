@@ -42,3 +42,12 @@ android/keystores/debug.keystore
 
 # General ignore folder
 ignore/
+
+# Environment Variables
+.env
+
+# TODO tasks
+TODO.txt
+
+# Things To Remember
+REMEMBER.txt
