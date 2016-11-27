@@ -3,12 +3,11 @@ import { StyleSheet, View, Text, TextInput } from 'react-native';
 import Button from 'react-native-button';
 import Hr from 'react-native-hr';
 import Config from 'react-native-config';
-import _ from 'lodash';
 
 import braidStyles from '../styles.js';
 
 
-export default class Auth extends Component {
+export default class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -62,22 +61,20 @@ export default class Auth extends Component {
 
   render() {
     return (
-      <View style={authStyles.authContainer}>
+      <View style={loginStyles.loginContainer}>
         <View style={braidStyles.formContainer}>
           <TextInput style={braidStyles.textInput}
                      onChangeText={text => this.typeIntoUsername(text)}
                      value={this.state.loginForm.username}
-                     placeholder='Username'
-                     keyboardType='default'/>
+                     placeholder='Username' />
           <Hr lineColor='#DDD' />
           <TextInput style={braidStyles.textInput}
                      onChangeText={text => this.typeIntoPassword(text)}
                      value={this.state.loginForm.password}
                      placeholder='Password'
-                     keyboardType='default'
-                     secureTextEntry={true}/>
+                     secureTextEntry={true} />
         </View>
-        <Text style={authStyles.errorMessage}>{this.state.loginError}</Text>
+        <Text style={loginStyles.errorMessage}>{this.state.loginError}</Text>
         <Button style={[braidStyles.button, braidStyles.primaryButton]}
                 styleDisabled={braidStyles.disabledButton}
                 onPress={this.pressLogin}
@@ -89,13 +86,14 @@ export default class Auth extends Component {
   }
 }
 
-Auth.propTypes = {
+Login.propTypes = {
   navigateTo: React.PropTypes.func.isRequired,
   setLoggedInUser: React.PropTypes.func.isRequired,
 };
 
-const authStyles = StyleSheet.create({
-  authContainer: {
+
+const loginStyles = StyleSheet.create({
+  loginContainer: {
     flex: 1,
     marginTop: 40,
   },

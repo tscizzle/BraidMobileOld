@@ -53,7 +53,7 @@ export default class Settings extends Component {
       .then(logoutRes => {
         if (logoutRes.status === 200) {
           this.props.setLoggedInUser({});
-          this.props.navigateTo('auth');
+          this.props.navigateTo('login');
         }
       });
   }
@@ -82,6 +82,7 @@ Settings.propTypes = {
   setLoggedInUser: React.PropTypes.func.isRequired,
   loggedInUser: React.PropTypes.object.isRequired,
 };
+
 
 const settingsStyles = StyleSheet.create({
   settingsContainer: {
