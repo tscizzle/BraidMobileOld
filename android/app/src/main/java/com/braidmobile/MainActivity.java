@@ -1,6 +1,7 @@
 package com.braidmobile;
 
 import com.facebook.react.ReactActivity;
+import com.oblador.keychain.KeychainPackage;
 import com.lugg.ReactNativeConfig.ReactNativeConfigPackage;
 
 public class MainActivity extends ReactActivity {

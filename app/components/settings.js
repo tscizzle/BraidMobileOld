@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { StyleSheet, View, Text, Linking, PushNotificationIOS } from 'react-native';
 import Button from 'react-native-button';
 import Config from 'react-native-config';
+import Keychain from 'react-native-keychain';
 
 import braidStyles from '../styles.js';
 
@@ -36,9 +37,7 @@ export default class Settings extends Component {
         },
         body: JSON.stringify(deviceInfo),
       })
-        .then(addDeviceIDRes => {
-          console.log('addDeviceIDRes', addDeviceIDRes);
-        });
+        .catch(err => console.log('add device err', err));
     }
   }
 
@@ -52,6 +51,7 @@ export default class Settings extends Component {
     fetch(Config.BRAID_SERVER_URL + '/logout')
       .then(logoutRes => {
         if (logoutRes.status === 200) {
+          Keychain.resetGenericPassword();
           this.props.setLoggedInUser({});
           this.props.navigateTo('login');
         }

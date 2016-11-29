@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TextInput } from 'react-native';
 import Button from 'react-native-button';
 import Hr from 'react-native-hr';
 import Config from 'react-native-config';
+import Keychain from 'react-native-keychain';
 
 import braidStyles from '../styles.js';
 
@@ -18,6 +19,14 @@ export default class Login extends Component {
       loginDisabled: false,
       loginError: '',
     };
+  }
+
+  componentWillMount() {
+    Keychain.getGenericPassword()
+      .then(credentials => {
+        this.setState({loginForm: credentials});
+        this.pressLogin();
+      });
   }
 
   typeIntoUsername = usernameInput => {
@@ -49,7 +58,8 @@ export default class Login extends Component {
           this.setState({loginError: errorMessage});
         } else {
           this.props.setLoggedInUser(loginJSON.user);
-          this.setState({loginError: ''});
+          Keychain.setGenericPassword(this.state.loginForm.username, this.state.loginForm.password);
+          this.setState({loginForm: {}, loginError: ''});
           this.props.navigateTo('settings');
         }
       })
