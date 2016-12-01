@@ -17,7 +17,7 @@ export default class Login extends Component {
         password: '',
       },
       loginDisabled: false,
-      loginError: '',
+      loginError: null,
     };
   }
 
@@ -25,19 +25,20 @@ export default class Login extends Component {
     Keychain.getGenericPassword()
       .then(credentials => {
         this.setState({loginForm: credentials});
-        this.pressLogin();
-      });
+        this._pressLogin();
+      })
+      .catch(err => console.log('get credentials err', err));
   }
 
-  typeIntoUsername = usernameInput => {
+  _typeIntoUsername = usernameInput => {
     this.setState({loginForm: {...this.state.loginForm, username: usernameInput}});
   }
 
-  typeIntoPassword = passwordInput => {
+  _typeIntoPassword = passwordInput => {
     this.setState({loginForm: {...this.state.loginForm, password: passwordInput}});
   }
 
-  pressLogin = () => {
+  _pressLogin = () => {
     this.setState({loginDisabled: true});
     const loginRoute = Config.BRAID_SERVER_URL + '/login';
     fetch(loginRoute, {
@@ -59,7 +60,6 @@ export default class Login extends Component {
         } else {
           this.props.setLoggedInUser(loginJSON.user);
           Keychain.setGenericPassword(this.state.loginForm.username, this.state.loginForm.password);
-          this.setState({loginForm: {}, loginError: ''});
           this.props.navigateTo('settings');
         }
       })
@@ -74,12 +74,12 @@ export default class Login extends Component {
       <View style={loginStyles.loginContainer}>
         <View style={braidStyles.formContainer}>
           <TextInput style={braidStyles.textInput}
-                     onChangeText={text => this.typeIntoUsername(text)}
+                     onChangeText={this._typeIntoUsername}
                      value={this.state.loginForm.username}
                      placeholder='Username' />
           <Hr lineColor='#DDD' />
           <TextInput style={braidStyles.textInput}
-                     onChangeText={text => this.typeIntoPassword(text)}
+                     onChangeText={this._typeIntoPassword}
                      value={this.state.loginForm.password}
                      placeholder='Password'
                      secureTextEntry={true} />
@@ -87,7 +87,7 @@ export default class Login extends Component {
         <Text style={loginStyles.errorMessage}>{this.state.loginError}</Text>
         <Button style={[braidStyles.button, braidStyles.primaryButton]}
                 styleDisabled={braidStyles.disabledButton}
-                onPress={this.pressLogin}
+                onPress={this._pressLogin}
                 disabled={this.state.loginDisabled}>
           Login
         </Button>

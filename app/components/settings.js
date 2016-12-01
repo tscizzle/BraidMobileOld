@@ -4,6 +4,8 @@ import Button from 'react-native-button';
 import Config from 'react-native-config';
 import Keychain from 'react-native-keychain';
 
+import UserSchema from '../models/user.js';
+
 import braidStyles from '../styles.js';
 
 
@@ -16,7 +18,7 @@ export default class Settings extends Component {
   componentWillMount() {
     PushNotificationIOS.requestPermissions({alert: 1, badge: 1});
     PushNotificationIOS.addEventListener('register', this.onNotificationRegister);
-    this.refreshNotificationsEnabled();
+    this._refreshNotificationsEnabled();
   }
 
   componentWillUnmount() {
@@ -24,10 +26,10 @@ export default class Settings extends Component {
   }
 
   onNotificationRegister = token => {
-    this.refreshNotificationsEnabled();
-    const userId = this.props.loggedInUser._id;
-    if (userId) {
-      const addDeviceRoute = Config.BRAID_SERVER_URL + '/api/addDeviceIDForUser/' + userId;
+    this._refreshNotificationsEnabled();
+    const userID = this.props.loggedInUser._id;
+    if (userID) {
+      const addDeviceRoute = Config.BRAID_SERVER_URL + '/api/addDeviceIDForUser/' + userID;
       const deviceInfo = {device_id: token, platform: 'ios'};
       fetch(addDeviceRoute, {
         method: 'POST',
@@ -41,13 +43,13 @@ export default class Settings extends Component {
     }
   }
 
-  refreshNotificationsEnabled = () => {
+  _refreshNotificationsEnabled = () => {
     PushNotificationIOS.checkPermissions(permissions => {
       this.setState({notificationsEnabled: permissions.alert && permissions.badge});
     });
   }
 
-  pressLogout = () => {
+  _pressLogout = () => {
     fetch(Config.BRAID_SERVER_URL + '/logout')
       .then(logoutRes => {
         if (logoutRes.status === 200) {
@@ -59,17 +61,16 @@ export default class Settings extends Component {
   }
 
   render() {
-    const notificationsNotEnabled = !this.state.notificationsEnabled;
     return (
       <View style={settingsStyles.settingsContainer}>
-        {notificationsNotEnabled &&
+        {!this.state.notificationsEnabled &&
           <Button style={[braidStyles.button, braidStyles.primaryButton, settingsStyles.settingsButton]}
                   onPress={() => Linking.openURL('app-settings:')}>
             Enable Notifications
           </Button>
         }
         <Button style={[braidStyles.button, braidStyles.primaryButton, settingsStyles.settingsButton]}
-                onPress={this.pressLogout}>
+                onPress={this._pressLogout}>
           Logout
         </Button>
       </View>
@@ -80,7 +81,7 @@ export default class Settings extends Component {
 Settings.propTypes = {
   navigateTo: React.PropTypes.func.isRequired,
   setLoggedInUser: React.PropTypes.func.isRequired,
-  loggedInUser: React.PropTypes.object.isRequired,
+  loggedInUser: UserSchema.isRequired,
 };
 
 

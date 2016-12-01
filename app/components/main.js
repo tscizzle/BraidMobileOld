@@ -1,11 +1,14 @@
-import React, { Component } from 'react';
-import { StyleSheet, View, Text, Image } from 'react-native';
+import React, { Component, PropTypes } from 'react';
+import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import Button from 'react-native-button';
 import Config from 'react-native-config';
 import _ from 'lodash';
 
+import UserSchema from '../models/user.js';
+
 import Login from './login.js';
 import Settings from './settings.js';
+import Friendships from './friendships.js';
 
 
 export default class BraidMobile extends Component {
@@ -13,22 +16,23 @@ export default class BraidMobile extends Component {
     super(props);
     this.state = {
       currentScene: 'login',
-      loggedInUser: {},
+      loggedInUser: null,
     };
   }
 
-  navigateTo = scene => this.setState({currentScene: scene});
+  _navigateTo = scene => this.setState({currentScene: scene});
 
-  setLoggedInUser = user => this.setState({loggedInUser: user});
+  _setLoggedInUser = user => this.setState({loggedInUser: user});
 
   render() {
     return (
       <View style={mainStyles.mainContainer}>
-        <Navbar loggedInUser={this.state.loggedInUser} />
-        <Content navigateTo={this.navigateTo}
-                 setLoggedInUser={this.setLoggedInUser}
-                 loggedInUser={this.state.loggedInUser}
-                 currentScene={this.state.currentScene} />
+        <Navbar navigateTo={this._navigateTo}
+                loggedInUser={this.state.loggedInUser} />
+        <Content navigateTo={this._navigateTo}
+                 setLoggedInUser={this._setLoggedInUser}
+                 currentScene={this.state.currentScene}
+                 loggedInUser={this.state.loggedInUser} />
       </View>
     );
   }
@@ -42,17 +46,17 @@ export class Navbar extends Component {
   }
 
   componentWillMount() {
-    this.refreshProfilePic(this.props);
+    this._refreshProfilePic(this.props.loggedInUser);
   }
 
   componentWillReceiveProps(newProps) {
-    this.refreshProfilePic(newProps);
+    this._refreshProfilePic(newProps.loggedInUser);
   }
 
-  refreshProfilePic = props => {
-    const userId = props.loggedInUser._id;
-    if (userId) {
-      const accountSettingsRoute = Config.BRAID_SERVER_URL + '/api/account_settings/' + userId;
+  _refreshProfilePic = user => {
+    if (user) {
+      const userID = user._id;
+      const accountSettingsRoute = Config.BRAID_SERVER_URL + '/api/account_settings/' + userID;
       fetch(accountSettingsRoute)
         .then(accountSettingsRes => {
           return accountSettingsRes.json();
@@ -66,18 +70,30 @@ export class Navbar extends Component {
     }
   }
 
+  _pressBraidLogo = () => {
+    if (this.props.loggedInUser) {
+      this.props.navigateTo('friendships');
+    };
+  }
+
+  _pressBraidProfile = () => {
+    this.props.navigateTo('settings');
+  }
+
   render() {
-    const showNavbarProfile = !_.isEmpty(this.props.loggedInUser);
     return (
       <View style={mainStyles.navbar}>
-        <Image style={mainStyles.navbarLogo}
-               source={require('../assets/img/poop_logo.jpeg')} />
-        {showNavbarProfile &&
-          <View style={mainStyles.navbarProfile}>
+        <TouchableOpacity onPress={this._pressBraidLogo}>
+          <Image style={mainStyles.navbarLogo}
+                 source={require('../assets/img/poop_logo.jpeg')} />
+        </TouchableOpacity>
+        {this.props.loggedInUser &&
+          <TouchableOpacity style={mainStyles.navbarProfile}
+                            onPress={this._pressBraidProfile}>
             <Image style={mainStyles.navbarProfilePic}
                    source={this.state.profilePicSource} />
             <Text style={mainStyles.navbarUsername}>{this.props.loggedInUser.username}</Text>
-          </View>
+          </TouchableOpacity>
         }
       </View>
     );
@@ -85,7 +101,8 @@ export class Navbar extends Component {
 }
 
 Navbar.propTypes = {
-  loggedInUser: React.PropTypes.object.isRequired,
+  navigateTo: PropTypes.func.isRequired,
+  loggedInUser: UserSchema,
 };
 
 
@@ -97,10 +114,14 @@ export class Content extends Component {
           <Login navigateTo={this.props.navigateTo}
                  setLoggedInUser={this.props.setLoggedInUser} />
         }
-        {this.props.currentScene === 'settings' &&
+        {this.props.loggedInUser && this.props.currentScene === 'settings' &&
           <Settings navigateTo={this.props.navigateTo}
                     setLoggedInUser={this.props.setLoggedInUser}
                     loggedInUser={this.props.loggedInUser} />
+        }
+        {this.props.loggedInUser && this.props.currentScene === 'friendships' &&
+          <Friendships navigateTo={this.props.navigateTo}
+                       loggedInUser={this.props.loggedInUser} />
         }
       </View>
     );
@@ -110,8 +131,8 @@ export class Content extends Component {
 Content.propTypes = {
   navigateTo: React.PropTypes.func.isRequired,
   setLoggedInUser: React.PropTypes.func.isRequired,
-  loggedInUser: React.PropTypes.object.isRequired,
   currentScene: React.PropTypes.string.isRequired,
+  loggedInUser: UserSchema,
 };
 
 
