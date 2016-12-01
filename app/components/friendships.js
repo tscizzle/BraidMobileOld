@@ -23,7 +23,6 @@ export default class Friendships extends Component {
         return friendshipsRes.json();
       })
       .then(friendshipsJSON => {
-        console.log('friendshipsJSON', friendshipsJSON);
         this.setState({friendships: friendshipsJSON});
       })
       .catch(err => console.log('get friendships err', err));
