@@ -1,13 +1,19 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, Linking, PushNotificationIOS } from 'react-native';
 import Button from 'react-native-button';
 import Config from 'react-native-config';
 import Keychain from 'react-native-keychain';
 
 import UserSchema from '../models/user.js';
-
+import { jsonHeaders } from '../helpers.js';
 import braidStyles from '../styles.js';
 
+
+const SettingsPropTypes = {
+  navigateTo: PropTypes.func.isRequired,
+  setLoggedInUser: PropTypes.func.isRequired,
+  loggedInUser: UserSchema.isRequired,
+};
 
 export default class Settings extends Component {
   constructor(props) {
@@ -17,15 +23,15 @@ export default class Settings extends Component {
 
   componentWillMount() {
     PushNotificationIOS.requestPermissions({alert: 1, badge: 1});
-    PushNotificationIOS.addEventListener('register', this.onNotificationRegister);
+    PushNotificationIOS.addEventListener('register', this._onNotificationRegister);
     this._refreshNotificationsEnabled();
   }
 
   componentWillUnmount() {
-    PushNotificationIOS.removeEventListener('register', this.onNotificationRegister);
+    PushNotificationIOS.removeEventListener('register', this._onNotificationRegister);
   }
 
-  onNotificationRegister = token => {
+  _onNotificationRegister = token => {
     this._refreshNotificationsEnabled();
     const userID = this.props.loggedInUser._id;
     if (userID) {
@@ -33,10 +39,7 @@ export default class Settings extends Component {
       const deviceInfo = {device_id: token, platform: 'ios'};
       fetch(addDeviceRoute, {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
+        headers: jsonHeaders(),
         body: JSON.stringify(deviceInfo),
       })
         .catch(err => console.log('add device err', err));
@@ -54,7 +57,7 @@ export default class Settings extends Component {
       .then(logoutRes => {
         if (logoutRes.status === 200) {
           Keychain.resetGenericPassword();
-          this.props.setLoggedInUser({});
+          this.props.setLoggedInUser(null);
           this.props.navigateTo('login');
         }
       });
@@ -78,11 +81,7 @@ export default class Settings extends Component {
   }
 }
 
-Settings.propTypes = {
-  navigateTo: React.PropTypes.func.isRequired,
-  setLoggedInUser: React.PropTypes.func.isRequired,
-  loggedInUser: UserSchema.isRequired,
-};
+Settings.propTypes = SettingsPropTypes;
 
 
 const settingsStyles = StyleSheet.create({

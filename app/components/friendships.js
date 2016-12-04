@@ -1,14 +1,21 @@
-import React, { Component } from 'react';
-import { StyleSheet, View, Text, Linking, ListView } from 'react-native';
+import React, { Component, PropTypes } from 'react';
+import { StyleSheet, View, Text, Linking, ListView, TouchableOpacity } from 'react-native';
 import Button from 'react-native-button';
+import Hr from 'react-native-hr';
 import Config from 'react-native-config';
 
 import UserSchema from '../models/user.js';
 import FriendshipSchema from '../models/friendship.js';
-
 import { partnerFromFriendship } from '../helpers.js';
 import braidStyles from '../styles.js';
 
+
+const FriendshipsPropTypes = {
+  navigateTo: PropTypes.func.isRequired,
+  chatNavigateTo: PropTypes.func.isRequired,
+  setCurrentConvo: PropTypes.func.isRequired,
+  loggedInUser: UserSchema.isRequired,
+};
 
 export default class Friendships extends Component {
   constructor(props) {
@@ -17,8 +24,8 @@ export default class Friendships extends Component {
   }
 
   componentWillMount() {
-    const userId = this.props.loggedInUser._id;
-    fetch(Config.BRAID_SERVER_URL + '/api/friendships/' + userId)
+    const userID = this.props.loggedInUser._id;
+    fetch(Config.BRAID_SERVER_URL + '/api/friendships/' + userID)
       .then(friendshipsRes => {
         return friendshipsRes.json();
       })
@@ -31,18 +38,24 @@ export default class Friendships extends Component {
   render() {
     return (
       <View style={friendshipsStyles.friendshipsContainer}>
-        <FriendshipsList loggedInUser={this.props.loggedInUser}
+        <FriendshipsList chatNavigateTo={this.props.chatNavigateTo}
+                         setCurrentConvo={this.props.setCurrentConvo}
+                         loggedInUser={this.props.loggedInUser}
                          friendships={this.state.friendships} />
       </View>
     );
   }
 }
 
-Friendships.propTypes = {
-  navigateTo: React.PropTypes.func.isRequired,
-  loggedInUser: UserSchema.isRequired,
-};
+Friendships.propTypes = FriendshipsPropTypes;
 
+
+const FriendshipsListPropTypes = {
+  chatNavigateTo: PropTypes.func.isRequired,
+  setCurrentConvo: PropTypes.func.isRequired,
+  loggedInUser: UserSchema.isRequired,
+  friendships: PropTypes.arrayOf(FriendshipSchema).isRequired,
+};
 
 export class FriendshipsList extends Component {
   constructor(props) {
@@ -57,26 +70,37 @@ export class FriendshipsList extends Component {
   }
 
   _renderFriendshipInList = friendship => {
-    return (
-      <FriendshipInList loggedInUser={this.props.loggedInUser}
-                        friendship={friendship} />
-    );
+    return <FriendshipInList chatNavigateTo={this.props.chatNavigateTo}
+                             setCurrentConvo={this.props.setCurrentConvo}
+                             loggedInUser={this.props.loggedInUser}
+                             friendship={friendship}
+                             key={friendship._id} />;
+  }
+
+  _renderFriendshipSeparator = (sectionID, rowID) => {
+    return <Hr lineColor='#DDD'
+               key={rowID} />;
   }
 
   render() {
     return (
-      // TODO: display each friendship's partner username (the username of the user who's not the logged in user)
       <ListView dataSource={this.state.friendshipsDataSource}
-                renderRow={this._renderFriendshipInList} />
+                renderRow={this._renderFriendshipInList}
+                renderSeparator={this._renderFriendshipSeparator}
+                enableEmptySections={true} />
     );
   }
 }
 
-FriendshipsList.propTypes = {
-  loggedInUser: UserSchema.isRequired,
-  friendships: React.PropTypes.arrayOf(FriendshipSchema).isRequired,
-};
+FriendshipsList.propTypes = FriendshipsListPropTypes;
 
+
+const FriendshipInListPropTypes = {
+  chatNavigateTo: PropTypes.func.isRequired,
+  setCurrentConvo: PropTypes.func.isRequired,
+  loggedInUser: UserSchema.isRequired,
+  friendship: FriendshipSchema.isRequired,
+};
 
 export class FriendshipInList extends Component {
   constructor(props) {
@@ -87,22 +111,54 @@ export class FriendshipInList extends Component {
     };
   }
 
-  render() {
+  componentWillMount() {
     const partnerID = partnerFromFriendship(this.props.loggedInUser, this.props.friendship);
+    fetch(Config.BRAID_SERVER_URL + '/api/username/' + partnerID)
+      .then(usernameRes => {
+        return usernameRes.json();
+      })
+      .then(usernameJSON => {
+        const partnerUsername = usernameJSON.username;
+        this.setState({partnerUsername});
+      })
+      .catch(err => console.log('get partner username err', err));
+  }
+
+  _pressFriendship = () => {
+    const userID_0 = this.props.friendship.requester_id;
+    const userID_1 = this.props.friendship.target_id;
+    fetch(Config.BRAID_SERVER_URL + '/api/convoFromUsers/' + userID_0 + '/' + userID_1)
+      .then(convoRes => {
+        return convoRes.json();
+      })
+      .then(convoJSON => {
+        this.props.setCurrentConvo(convoJSON);
+        this.props.chatNavigateTo('messages');
+      });
+  }
+
+  render() {
     return (
-      <Text> {partnerID} ({this.props.friendship.status}) </Text>
+      <TouchableOpacity style={friendshipsStyles.friendshipInListContainer}
+                        onPress={this._pressFriendship}>
+        <Text style={braidStyles.text}> {this.state.partnerUsername} </Text>
+      </TouchableOpacity>
     );
   }
 }
 
-FriendshipInList.propTypes = {
-  loggedInUser: UserSchema.isRequired,
-  friendship: FriendshipSchema.isRequired,
-};
+FriendshipInList.PropTypes = FriendshipInListPropTypes;
 
 
 const friendshipsStyles = StyleSheet.create({
   friendshipsContainer: {
     flex: 1,
+  },
+  friendshipInListContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
+    padding: 20,
   },
 });

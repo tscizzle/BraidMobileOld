@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, TextInput } from 'react-native';
 import Button from 'react-native-button';
 import Hr from 'react-native-hr';
@@ -7,6 +7,11 @@ import Keychain from 'react-native-keychain';
 
 import braidStyles from '../styles.js';
 
+
+const LoginPropTypes = {
+  navigateTo: PropTypes.func.isRequired,
+  setLoggedInUser: PropTypes.func.isRequired,
+};
 
 export default class Login extends Component {
   constructor(props) {
@@ -84,7 +89,7 @@ export default class Login extends Component {
                      placeholder='Password'
                      secureTextEntry={true} />
         </View>
-        <Text style={loginStyles.errorMessage}>{this.state.loginError}</Text>
+        <Text style={[braidStyles.text, loginStyles.errorMessage]}>{this.state.loginError}</Text>
         <Button style={[braidStyles.button, braidStyles.primaryButton]}
                 styleDisabled={braidStyles.disabledButton}
                 onPress={this._pressLogin}
@@ -96,10 +101,7 @@ export default class Login extends Component {
   }
 }
 
-Login.propTypes = {
-  navigateTo: React.PropTypes.func.isRequired,
-  setLoggedInUser: React.PropTypes.func.isRequired,
-};
+Login.PropTypes = LoginPropTypes;
 
 
 const loginStyles = StyleSheet.create({

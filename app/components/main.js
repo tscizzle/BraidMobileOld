@@ -5,10 +5,10 @@ import Config from 'react-native-config';
 import _ from 'lodash';
 
 import UserSchema from '../models/user.js';
-
+import braidStyles from '../styles.js';
 import Login from './login.js';
 import Settings from './settings.js';
-import Friendships from './friendships.js';
+import Chat from './chat.js';
 
 
 export default class BraidMobile extends Component {
@@ -38,6 +38,11 @@ export default class BraidMobile extends Component {
   }
 }
 
+
+const NavbarPropTypes = {
+  navigateTo: PropTypes.func.isRequired,
+  loggedInUser: UserSchema,
+};
 
 export class Navbar extends Component {
   constructor(props) {
@@ -72,7 +77,7 @@ export class Navbar extends Component {
 
   _pressBraidLogo = () => {
     if (this.props.loggedInUser) {
-      this.props.navigateTo('friendships');
+      this.props.navigateTo('chat');
     };
   }
 
@@ -92,7 +97,9 @@ export class Navbar extends Component {
                             onPress={this._pressBraidProfile}>
             <Image style={mainStyles.navbarProfilePic}
                    source={this.state.profilePicSource} />
-            <Text style={mainStyles.navbarUsername}>{this.props.loggedInUser.username}</Text>
+            <Text style={[braidStyles.text, mainStyles.navbarUsername]}>
+              {this.props.loggedInUser.username}
+            </Text>
           </TouchableOpacity>
         }
       </View>
@@ -100,11 +107,15 @@ export class Navbar extends Component {
   }
 }
 
-Navbar.propTypes = {
+Navbar.propTypes = NavbarPropTypes;
+
+
+const ContentPropTypes = {
   navigateTo: PropTypes.func.isRequired,
+  setLoggedInUser: PropTypes.func.isRequired,
+  currentScene: PropTypes.string.isRequired,
   loggedInUser: UserSchema,
 };
-
 
 export class Content extends Component {
   render() {
@@ -119,21 +130,16 @@ export class Content extends Component {
                     setLoggedInUser={this.props.setLoggedInUser}
                     loggedInUser={this.props.loggedInUser} />
         }
-        {this.props.loggedInUser && this.props.currentScene === 'friendships' &&
-          <Friendships navigateTo={this.props.navigateTo}
-                       loggedInUser={this.props.loggedInUser} />
+        {this.props.loggedInUser && this.props.currentScene === 'chat' &&
+          <Chat navigateTo={this.props.navigateTo}
+                loggedInUser={this.props.loggedInUser} />
         }
       </View>
     );
   }
 }
 
-Content.propTypes = {
-  navigateTo: React.PropTypes.func.isRequired,
-  setLoggedInUser: React.PropTypes.func.isRequired,
-  currentScene: React.PropTypes.string.isRequired,
-  loggedInUser: UserSchema,
-};
+Content.propTypes = ContentPropTypes;
 
 
 const mainStyles = StyleSheet.create({
@@ -166,7 +172,6 @@ const mainStyles = StyleSheet.create({
   navbarUsername: {
     padding: 10,
     fontSize: 20,
-    color: '#555',
     fontWeight: 'bold',
   },
   content: {

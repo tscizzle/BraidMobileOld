@@ -2,6 +2,9 @@ import { StyleSheet } from 'react-native';
 
 
 export default braidStyles = StyleSheet.create({
+  text: {
+    color: '#555',
+  },
   textInput: {
     height: 60,
     backgroundColor: '#FFF',

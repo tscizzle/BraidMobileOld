@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { PropTypes } from 'react';
 
 
-export default UserSchema = React.PropTypes.shape({
-  _id: React.PropTypes.string.isRequired,
-  username: React.PropTypes.string.isRequired,
-  email: React.PropTypes.string,
+export default UserSchema = PropTypes.shape({
+  _id: PropTypes.string.isRequired,
+  username: PropTypes.string.isRequired,
+  email: PropTypes.string,
 });
