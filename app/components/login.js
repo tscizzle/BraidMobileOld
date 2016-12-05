@@ -23,16 +23,19 @@ export default class Login extends Component {
       },
       loginDisabled: false,
       loginError: null,
+      autoLoginFailed: false,
     };
   }
 
   componentWillMount() {
     Keychain.getGenericPassword()
       .then(credentials => {
-        this.setState({loginForm: credentials});
-        this._pressLogin();
+        this.setState({loginForm: credentials}, this._pressLogin);
       })
-      .catch(err => console.log('get credentials err', err));
+      .catch(err => {
+        console.log('get credentials err', err);
+        this.setState({autoLoginFailed: true});
+      });
   }
 
   _typeIntoUsername = usernameInput => {
@@ -70,12 +73,14 @@ export default class Login extends Component {
       })
       .catch(err => {
         this.setState({loginDisabled: false});
+        console.log('login err', err);
         this.setState({loginError: JSON.stringify(err)});
       });
   }
 
   render() {
     return (
+      /* TODO: instead of the login form put a loading screen here unless this.state.autoLoginFailed is true */
       <View style={loginStyles.loginContainer}>
         <View style={braidStyles.formContainer}>
           <TextInput style={braidStyles.textInput}

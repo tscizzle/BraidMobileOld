@@ -7,7 +7,7 @@ import _ from 'lodash';
 import UserSchema from '../models/user.js';
 import braidStyles from '../styles.js';
 import Login from './login.js';
-import Settings from './settings.js';
+import SettingsContainer from './settings.js';
 import Chat from './chat.js';
 
 
@@ -45,36 +45,6 @@ const NavbarPropTypes = {
 };
 
 export class Navbar extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {profilePicSource: null};
-  }
-
-  componentWillMount() {
-    this._refreshProfilePic(this.props.loggedInUser);
-  }
-
-  componentWillReceiveProps(newProps) {
-    this._refreshProfilePic(newProps.loggedInUser);
-  }
-
-  _refreshProfilePic = user => {
-    if (user) {
-      const userID = user._id;
-      const accountSettingsRoute = Config.BRAID_SERVER_URL + '/api/account_settings/' + userID;
-      fetch(accountSettingsRoute)
-        .then(accountSettingsRes => {
-          return accountSettingsRes.json();
-        })
-        .then(accountSettingsJSON => {
-          const profilePicURL = accountSettingsJSON.profile_pic_url;
-          if (profilePicURL) {
-            this.setState({profilePicSource: {uri: profilePicURL}});
-          }
-        });
-    }
-  }
-
   _pressBraidLogo = () => {
     if (this.props.loggedInUser) {
       this.props.navigateTo('chat');
@@ -95,8 +65,6 @@ export class Navbar extends Component {
         {this.props.loggedInUser &&
           <TouchableOpacity style={mainStyles.navbarProfile}
                             onPress={this._pressBraidProfile}>
-            <Image style={mainStyles.navbarProfilePic}
-                   source={this.state.profilePicSource} />
             <Text style={[braidStyles.text, mainStyles.navbarUsername]}>
               {this.props.loggedInUser.username}
             </Text>
@@ -126,9 +94,9 @@ export class Content extends Component {
                  setLoggedInUser={this.props.setLoggedInUser} />
         }
         {this.props.loggedInUser && this.props.currentScene === 'settings' &&
-          <Settings navigateTo={this.props.navigateTo}
-                    setLoggedInUser={this.props.setLoggedInUser}
-                    loggedInUser={this.props.loggedInUser} />
+          <SettingsContainer navigateTo={this.props.navigateTo}
+                             setLoggedInUser={this.props.setLoggedInUser}
+                             loggedInUser={this.props.loggedInUser} />
         }
         {this.props.loggedInUser && this.props.currentScene === 'chat' &&
           <Chat navigateTo={this.props.navigateTo}
@@ -164,13 +132,7 @@ const mainStyles = StyleSheet.create({
   navbarProfile: {
     flexDirection: 'row',
   },
-  navbarProfilePic: {
-    height: 40,
-    width: 40,
-    borderRadius: 20,
-  },
   navbarUsername: {
-    padding: 10,
     fontSize: 20,
     fontWeight: 'bold',
   },

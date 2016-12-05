@@ -3,8 +3,8 @@ import { StyleSheet, View, Text } from 'react-native';
 
 import UserSchema from '../models/user.js';
 
-import Friendships from './friendships.js';
-import Messages from './messages.js';
+import FriendshipsContainer from './friendships.js';
+import MessagesContainer from './messages.js';
 
 
 const ChatPropTypes = {
@@ -29,16 +29,16 @@ export default class Chat extends Component {
     return (
       <View style={chatStyles.chatContainer}>
         {this.state.chatCurrentScene === 'friendships' &&
-          <Friendships navigateTo={this.props.navigateTo}
-                       chatNavigateTo={this._chatNavigateTo}
-                       setCurrentConvo={this._setCurrentConvo}
-                       loggedInUser={this.props.loggedInUser} />
+          <FriendshipsContainer navigateTo={this.props.navigateTo}
+                                chatNavigateTo={this._chatNavigateTo}
+                                setCurrentConvo={this._setCurrentConvo}
+                                loggedInUser={this.props.loggedInUser} />
         }
-        {this.state.chatCurrentScene === 'messages' &&
-          <Messages navigateTo={this.props.navigateTo}
-                    chatNavigateTo={this._chatNavigateTo}
-                    loggedInUser={this.props.loggedInUser}
-                    currentConvo={this.state.currentConvo} />
+        {this.state.currentConvo && this.state.chatCurrentScene === 'messages' &&
+          <MessagesContainer navigateTo={this.props.navigateTo}
+                             chatNavigateTo={this._chatNavigateTo}
+                             loggedInUser={this.props.loggedInUser}
+                             currentConvo={this.state.currentConvo} />
         }
       </View>
     );

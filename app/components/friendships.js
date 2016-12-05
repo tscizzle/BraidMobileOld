@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { StyleSheet, View, Text, Linking, ListView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ListView, TouchableOpacity } from 'react-native';
 import Button from 'react-native-button';
 import Hr from 'react-native-hr';
 import Config from 'react-native-config';
@@ -10,14 +10,14 @@ import { partnerFromFriendship } from '../helpers.js';
 import braidStyles from '../styles.js';
 
 
-const FriendshipsPropTypes = {
+const FriendshipsContainerPropTypes = {
   navigateTo: PropTypes.func.isRequired,
   chatNavigateTo: PropTypes.func.isRequired,
   setCurrentConvo: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
 };
 
-export default class Friendships extends Component {
+export default class FriendshipsContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {friendships: []};
@@ -37,27 +37,25 @@ export default class Friendships extends Component {
 
   render() {
     return (
-      <View style={friendshipsStyles.friendshipsContainer}>
-        <FriendshipsList chatNavigateTo={this.props.chatNavigateTo}
-                         setCurrentConvo={this.props.setCurrentConvo}
-                         loggedInUser={this.props.loggedInUser}
-                         friendships={this.state.friendships} />
-      </View>
+      <Friendships chatNavigateTo={this.props.chatNavigateTo}
+                   setCurrentConvo={this.props.setCurrentConvo}
+                   loggedInUser={this.props.loggedInUser}
+                   friendships={this.state.friendships} />
     );
   }
 }
 
-Friendships.propTypes = FriendshipsPropTypes;
+FriendshipsContainer.propTypes = FriendshipsContainerPropTypes;
 
 
-const FriendshipsListPropTypes = {
+const FriendshipsPropTypes = {
   chatNavigateTo: PropTypes.func.isRequired,
   setCurrentConvo: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
   friendships: PropTypes.arrayOf(FriendshipSchema).isRequired,
 };
 
-export class FriendshipsList extends Component {
+export class Friendships extends Component {
   constructor(props) {
     super(props);
     const friendshipsDataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
@@ -69,12 +67,12 @@ export class FriendshipsList extends Component {
     this.setState({friendshipsDataSource: this.state.friendshipsDataSource.cloneWithRows(newFriendships)});
   }
 
-  _renderFriendshipInList = friendship => {
-    return <FriendshipInList chatNavigateTo={this.props.chatNavigateTo}
-                             setCurrentConvo={this.props.setCurrentConvo}
-                             loggedInUser={this.props.loggedInUser}
-                             friendship={friendship}
-                             key={friendship._id} />;
+  _renderFriendship = friendship => {
+    return <Friendship chatNavigateTo={this.props.chatNavigateTo}
+                       setCurrentConvo={this.props.setCurrentConvo}
+                       loggedInUser={this.props.loggedInUser}
+                       friendship={friendship}
+                       key={friendship._id} />;
   }
 
   _renderFriendshipSeparator = (sectionID, rowID) => {
@@ -84,25 +82,27 @@ export class FriendshipsList extends Component {
 
   render() {
     return (
-      <ListView dataSource={this.state.friendshipsDataSource}
-                renderRow={this._renderFriendshipInList}
-                renderSeparator={this._renderFriendshipSeparator}
-                enableEmptySections={true} />
+      <View style={friendshipsStyles.friendshipsList}>
+        <ListView dataSource={this.state.friendshipsDataSource}
+                  renderRow={this._renderFriendship}
+                  renderSeparator={this._renderFriendshipSeparator}
+                  enableEmptySections={true} />
+      </View>
     );
   }
 }
 
-FriendshipsList.propTypes = FriendshipsListPropTypes;
+Friendships.propTypes = FriendshipsPropTypes;
 
 
-const FriendshipInListPropTypes = {
+const FriendshipPropTypes = {
   chatNavigateTo: PropTypes.func.isRequired,
   setCurrentConvo: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
   friendship: FriendshipSchema.isRequired,
 };
 
-export class FriendshipInList extends Component {
+export class Friendship extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -129,17 +129,19 @@ export class FriendshipInList extends Component {
     const userID_1 = this.props.friendship.target_id;
     fetch(Config.BRAID_SERVER_URL + '/api/convoFromUsers/' + userID_0 + '/' + userID_1)
       .then(convoRes => {
+        console.log('convoRes', convoRes);
         return convoRes.json();
       })
       .then(convoJSON => {
         this.props.setCurrentConvo(convoJSON);
         this.props.chatNavigateTo('messages');
-      });
+      })
+      .catch(err => console.log('get convo err', err));
   }
 
   render() {
     return (
-      <TouchableOpacity style={friendshipsStyles.friendshipInListContainer}
+      <TouchableOpacity style={friendshipsStyles.friendshipRow}
                         onPress={this._pressFriendship}>
         <Text style={braidStyles.text}> {this.state.partnerUsername} </Text>
       </TouchableOpacity>
@@ -147,14 +149,14 @@ export class FriendshipInList extends Component {
   }
 }
 
-FriendshipInList.PropTypes = FriendshipInListPropTypes;
+Friendship.PropTypes = FriendshipPropTypes;
 
 
 const friendshipsStyles = StyleSheet.create({
-  friendshipsContainer: {
+  friendshipsList: {
     flex: 1,
   },
-  friendshipInListContainer: {
+  friendshipRow: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'flex-end',

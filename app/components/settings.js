@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { StyleSheet, View, Text, Linking, PushNotificationIOS } from 'react-native';
+import { StyleSheet, View, Text, Image, PushNotificationIOS } from 'react-native';
 import Button from 'react-native-button';
 import Config from 'react-native-config';
 import Keychain from 'react-native-keychain';
@@ -9,13 +9,56 @@ import { jsonHeaders } from '../helpers.js';
 import braidStyles from '../styles.js';
 
 
-const SettingsPropTypes = {
+const SettingsContainerPropTypes = {
   navigateTo: PropTypes.func.isRequired,
   setLoggedInUser: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
 };
 
-export default class Settings extends Component {
+export default class SettingsContainer extends Component {
+  constructor(props) {
+    super(props);
+     // TODO: make a default profile pic, the dummy pic in the web app
+    this.state = {profilePicURL: null};
+  }
+
+  componentWillMount() {
+    const userID = this.props.loggedInUser._id;
+    const accountSettingsRoute = Config.BRAID_SERVER_URL + '/api/account_settings/' + userID;
+    fetch(accountSettingsRoute)
+      .then(accountSettingsRes => {
+        return accountSettingsRes.json();
+      })
+      .then(accountSettingsJSON => {
+        const profilePicURL = accountSettingsJSON.profile_pic_url;
+        if (profilePicURL) {
+          this.setState({profilePicURL});
+        }
+      })
+      .catch(err => console.log('get account settings err', err));
+  }
+
+  render() {
+    return (
+      <Settings navigateTo={this.props.navigateTo}
+                setLoggedInUser={this.props.setLoggedInUser}
+                loggedInUser={this.props.loggedInUser}
+                profilePicURL={this.state.profilePicURL} />
+    );
+  }
+}
+
+SettingsContainer.propTypes = SettingsContainerPropTypes;
+
+
+const SettingsPropTypes = {
+  navigateTo: PropTypes.func.isRequired,
+  setLoggedInUser: PropTypes.func.isRequired,
+  loggedInUser: UserSchema.isRequired,
+  profilePicURL: PropTypes.string,
+};
+
+export class Settings extends Component {
   constructor(props) {
     super(props);
     this.state = {notificationsEnabled: true};
@@ -66,16 +109,26 @@ export default class Settings extends Component {
   render() {
     return (
       <View style={settingsStyles.settingsContainer}>
+        <View style={settingsStyles.profilePicContainer}>
+          {this.props.profilePicURL &&
+            <Image style={settingsStyles.profilePic}
+                   source={{uri: this.props.profilePicURL}} />
+          }
+        </View>
         {!this.state.notificationsEnabled &&
-          <Button style={[braidStyles.button, braidStyles.primaryButton, settingsStyles.settingsButton]}
-                  onPress={() => Linking.openURL('app-settings:')}>
-            Enable Notifications
-          </Button>
+          <View style={settingsStyles.settingsButtonContainer}>
+            <Button style={[braidStyles.button, braidStyles.primaryButton]}
+                    onPress={() => Linking.openURL('app-settings:')}>
+              Enable Notifications
+            </Button>
+          </View>
         }
-        <Button style={[braidStyles.button, braidStyles.primaryButton, settingsStyles.settingsButton]}
-                onPress={this._pressLogout}>
-          Logout
-        </Button>
+        <View style={settingsStyles.settingsButtonContainer}>
+          <Button style={[braidStyles.button, braidStyles.primaryButton]}
+                  onPress={this._pressLogout}>
+            Logout
+          </Button>
+        </View>
       </View>
     );
   }
@@ -88,7 +141,17 @@ const settingsStyles = StyleSheet.create({
   settingsContainer: {
     flex: 1,
   },
-  settingsButton: {
+  settingsButtonContainer: {
     marginTop: 40,
+  },
+  profilePicContainer: {
+    alignItems: 'center',
+    height: 200,
+    marginTop: 40,
+  },
+  profilePic: {
+    height: 200,
+    width: 200,
+    borderRadius: 100,
   },
 });
