@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import Button from 'react-native-button';
 import Config from 'react-native-config';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import _ from 'lodash';
 
 import UserSchema from '../models/user.js';
@@ -65,9 +66,7 @@ export class Navbar extends Component {
         {this.props.loggedInUser &&
           <TouchableOpacity style={mainStyles.navbarProfile}
                             onPress={this._pressBraidProfile}>
-            <Text style={[braidStyles.text, mainStyles.navbarUsername]}>
-              {this.props.loggedInUser.username}
-            </Text>
+            <Icon style={[braidStyles.icon, mainStyles.navbarSettings]} name='gear' />
           </TouchableOpacity>
         }
       </View>
@@ -132,9 +131,8 @@ const mainStyles = StyleSheet.create({
   navbarProfile: {
     flexDirection: 'row',
   },
-  navbarUsername: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  navbarSettings: {
+    fontSize: 40,
   },
   content: {
     flex: 1,

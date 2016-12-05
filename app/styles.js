@@ -14,6 +14,9 @@ export default braidStyles = StyleSheet.create({
   button: {
     padding: 20,
   },
+  icon: {
+    color: '#555',
+  },
   primaryButton: {
     color: 'white',
     backgroundColor: '#15A55D',

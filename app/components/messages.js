@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { StyleSheet, Text, ListView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ListView, TouchableOpacity } from 'react-native';
 import Button from 'react-native-button';
 import Hr from 'react-native-hr';
 import Config from 'react-native-config';
@@ -148,16 +148,18 @@ export class Message extends Component {
     const senderID = this.props.message.sender_id;
     const userID = this.props.loggedInUser._id;
     const messageClass = senderID === userID ? 'userMessage' : 'partnerMessage';
-    const messageTextClass = senderID === userID ? 'userMessageText' : 'partnerMessageText';
+    const messageBubbleClass = senderID === userID ? 'userMessageBubble' : 'partnerMessageBubble';
     const messageStrand = this.props.strandMap[this.props.message.strand_id];
     const messageColorNumber = messageStrand ? messageStrand.color_number : -1;
     const messageColor = STRAND_COLOR_ORDER[messageColorNumber];
     return (
       <TouchableOpacity style={[messagesStyles.messageRow, messagesStyles[messageClass]]}
                         onPress={this._pressMessage}>
-        <Text style={[braidStyles.text, messagesStyles.messageBubble, {backgroundColor: messageColor}]}>
-          {this.props.message.text}
-        </Text>
+        <View style={[messagesStyles.messageBubble, messagesStyles[messageBubbleClass], {backgroundColor: messageColor}]}>
+          <Text style={braidStyles.text}>
+            {this.props.message.text}
+          </Text>
+        </View>
       </TouchableOpacity>
     );
   }
@@ -169,12 +171,13 @@ Message.propTypes = MessagePropTypes;
 const messagesStyles = StyleSheet.create({
   messagesList: {
     flex: 1,
+    padding: 10,
   },
   messageRow: {
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'flex-start',
-    borderRadius: 20,
+    marginTop: 5,
   },
   userMessage: {
     flexDirection: 'row',
@@ -183,6 +186,13 @@ const messagesStyles = StyleSheet.create({
     flexDirection: 'row-reverse',
   },
   messageBubble: {
+    maxWidth: 250,
     padding: 10,
+  },
+  userMessageBubble: {
+    borderRadius: 20,
+  },
+  partnerMessageBubble: {
+    borderRadius: 0,
   },
 });
