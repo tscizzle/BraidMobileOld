@@ -15,6 +15,13 @@ export const partnerFromFriendship = (user, friendship) => {
   return userID === requesterID ? targetID : requesterID;
 };
 
+export const partnerFromConvo = (user, convo) => {
+  const userID = user._id;
+  const userID0 = convo.user_id_0;
+  const userID1 = convo.user_id_1;
+  return userID === userID0 ? userID1 : userID0;
+};
+
 export const filterMessagesByStrand = (messages, strandID) => {
   const filteredMessages = _.filter(messages, message => {
     return !strandID || message.strand_id === strandID;

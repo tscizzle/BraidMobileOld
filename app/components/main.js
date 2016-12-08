@@ -64,8 +64,7 @@ export class Navbar extends Component {
                  source={require('../assets/img/poop_logo.jpeg')} />
         </TouchableOpacity>
         {this.props.loggedInUser &&
-          <TouchableOpacity style={mainStyles.navbarProfile}
-                            onPress={this._pressBraidProfile}>
+          <TouchableOpacity onPress={this._pressBraidProfile}>
             <Icon style={[braidStyles.icon, mainStyles.navbarSettings]} name='gear' />
           </TouchableOpacity>
         }
@@ -120,16 +119,13 @@ const mainStyles = StyleSheet.create({
     alignItems: 'center',
     height: 80,
     paddingTop: 20,
-    paddingLeft: 10,
     paddingRight: 10,
+    paddingLeft: 10,
     backgroundColor: '#DDD',
   },
   navbarLogo: {
     height: 40,
     width: 40,
-  },
-  navbarProfile: {
-    flexDirection: 'row',
   },
   navbarSettings: {
     fontSize: 40,

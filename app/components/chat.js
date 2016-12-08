@@ -4,7 +4,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import UserSchema from '../models/user.js';
 
 import FriendshipsContainer from './friendships.js';
-import MessagesContainer from './messages.js';
+import MessagesScene from './messages.js';
 
 
 const ChatPropTypes = {
@@ -17,13 +17,16 @@ export default class Chat extends Component {
     super(props);
     this.state = {
       chatCurrentScene: 'friendships',
-      currentConvo: null,
+      friendship: null,
+      convo: null,
     };
   }
 
   _chatNavigateTo = chatScene => this.setState({chatCurrentScene: chatScene});
 
-  _setCurrentConvo = convo => this.setState({currentConvo: convo});
+  _setFriendship = convo => this.setState({friendship});
+
+  _setConvo = convo => this.setState({convo});
 
   render() {
     return (
@@ -31,14 +34,14 @@ export default class Chat extends Component {
         {this.state.chatCurrentScene === 'friendships' &&
           <FriendshipsContainer navigateTo={this.props.navigateTo}
                                 chatNavigateTo={this._chatNavigateTo}
-                                setCurrentConvo={this._setCurrentConvo}
+                                setConvo={this._setConvo}
                                 loggedInUser={this.props.loggedInUser} />
         }
-        {this.state.currentConvo && this.state.chatCurrentScene === 'messages' &&
-          <MessagesContainer navigateTo={this.props.navigateTo}
-                             chatNavigateTo={this._chatNavigateTo}
-                             loggedInUser={this.props.loggedInUser}
-                             currentConvo={this.state.currentConvo} />
+        {this.state.convo && this.state.chatCurrentScene === 'messages' &&
+          <MessagesScene navigateTo={this.props.navigateTo}
+                         chatNavigateTo={this._chatNavigateTo}
+                         loggedInUser={this.props.loggedInUser}
+                         convo={this.state.convo} />
         }
       </View>
     );

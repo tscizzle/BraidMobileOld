@@ -1,15 +1,15 @@
 import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, ListView, TouchableOpacity } from 'react-native';
-import Button from 'react-native-button';
 import Hr from 'react-native-hr';
 import Config from 'react-native-config';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import _ from 'lodash';
 
 import UserSchema from '../models/user.js';
 import ConvoSchema from '../models/convo.js';
 import StrandSchema from '../models/strand.js';
 import MessageSchema from '../models/message.js';
-import { filterMessagesByStrand } from '../helpers.js';
+import { partnerFromConvo, filterMessagesByStrand } from '../helpers.js';
 import braidStyles from '../styles.js';
 
 
@@ -18,14 +18,87 @@ const STRAND_COLOR_ORDER = ['#EFBFFF', '#9EEFD0', '#FFFAAD', '#FFC99E', '#F2969F
 STRAND_COLOR_ORDER[-1] = '#DDD';
 
 
-const MessagesContainerPropTypes = {
+const MessagesScenePropTypes = {
   navigateTo: PropTypes.func.isRequired,
   chatNavigateTo: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
-  currentConvo: ConvoSchema.isRequired,
+  convo: ConvoSchema.isRequired,
 };
 
-export default class MessagesContainer extends Component {
+export default class MessagesScene extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {partnerUsername: null};
+  }
+
+  componentWillMount() {
+    const partnerID = partnerFromConvo(this.props.loggedInUser, this.props.convo);
+    fetch(Config.BRAID_SERVER_URL + '/api/username/' + partnerID)
+      .then(usernameRes => {
+        return usernameRes.json();
+      })
+      .then(usernameJSON => {
+        const partnerUsername = usernameJSON.username;
+        this.setState({partnerUsername});
+      })
+      .catch(err => console.log('get partner username err', err));
+  }
+
+  render() {
+    return (
+      <View>
+        <MessagesNavbar chatNavigateTo={this.props.chatNavigateTo}
+                        loggedInUser={this.props.loggedInUser}
+                        convo={this.props.convo}
+                        partnerUsername={this.state.partnerUsername} />
+        <MessagesContainer navigateTo={this.props.navigateTo}
+                           chatNavigateTo={this.props.chatNavigateTo}
+                           loggedInUser={this.props.loggedInUser}
+                           convo={this.props.convo} />
+      </View>
+    );
+  }
+}
+
+MessagesScene.propTypes = MessagesScenePropTypes;
+
+
+MessagesNavbarPropTypes = {
+  chatNavigateTo: PropTypes.func.isRequired,
+  loggedInUser: UserSchema.isRequired,
+  convo: ConvoSchema.isRequired,
+  partnerUsername: PropTypes.string,
+};
+
+export class MessagesNavbar extends Component {
+  _pressBackToFriendships = () => this.props.chatNavigateTo('friendships');
+
+  render() {
+    return (
+      <View style={messagesStyles.messagesNavbar}>
+        <TouchableOpacity onPress={this._pressBackToFriendships}>
+          <Icon style={[braidStyles.icon, messagesStyles.messagesNavbarIcon]} name='angle-left' />
+        </TouchableOpacity>
+        <Text style={[braidStyles.text, messagesStyles.partnerUsername]}>
+          {this.props.partnerUsername}
+        </Text>
+        <TouchableOpacity>
+          <Icon style={[braidStyles.icon, messagesStyles.messagesNavbarIcon]} name='eye' />
+        </TouchableOpacity>
+      </View>
+    );
+  }
+}
+
+MessagesNavbar.propTypes = MessagesNavbarPropTypes;
+
+
+const MessagesContainerPropTypes = {
+  loggedInUser: UserSchema.isRequired,
+  convo: ConvoSchema.isRequired,
+};
+
+export class MessagesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -37,7 +110,7 @@ export default class MessagesContainer extends Component {
   }
 
   componentWillMount() {
-    const convoID = this.props.currentConvo._id;
+    const convoID = this.props.convo._id;
 
     fetch(Config.BRAID_SERVER_URL + '/api/messages/' + convoID + '/' + DEFAULT_NUM_MESSAGES)
       .then(messagesRes => {
@@ -169,6 +242,27 @@ Message.propTypes = MessagePropTypes;
 
 
 const messagesStyles = StyleSheet.create({
+  messagesNavbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 60,
+    paddingRight: 10,
+    paddingLeft: 10,
+    backgroundColor: '#CCC',
+  },
+  messagesNavbarIcon: {
+    marginRight: 20,
+    marginLeft: 20,
+    height: 20,
+    width: 20,
+    fontSize: 20,
+    textAlign: 'center',
+  },
+  partnerUsername: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   messagesList: {
     flex: 1,
     padding: 10,

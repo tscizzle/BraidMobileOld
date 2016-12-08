@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, ListView, TouchableOpacity } from 'react-native';
-import Button from 'react-native-button';
 import Hr from 'react-native-hr';
 import Config from 'react-native-config';
 
@@ -13,7 +12,7 @@ import braidStyles from '../styles.js';
 const FriendshipsContainerPropTypes = {
   navigateTo: PropTypes.func.isRequired,
   chatNavigateTo: PropTypes.func.isRequired,
-  setCurrentConvo: PropTypes.func.isRequired,
+  setConvo: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
 };
 
@@ -38,7 +37,7 @@ export default class FriendshipsContainer extends Component {
   render() {
     return (
       <Friendships chatNavigateTo={this.props.chatNavigateTo}
-                   setCurrentConvo={this.props.setCurrentConvo}
+                   setConvo={this.props.setConvo}
                    loggedInUser={this.props.loggedInUser}
                    friendships={this.state.friendships} />
     );
@@ -50,7 +49,7 @@ FriendshipsContainer.propTypes = FriendshipsContainerPropTypes;
 
 const FriendshipsPropTypes = {
   chatNavigateTo: PropTypes.func.isRequired,
-  setCurrentConvo: PropTypes.func.isRequired,
+  setConvo: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
   friendships: PropTypes.arrayOf(FriendshipSchema).isRequired,
 };
@@ -69,7 +68,7 @@ export class Friendships extends Component {
 
   _renderFriendship = friendship => {
     return <Friendship chatNavigateTo={this.props.chatNavigateTo}
-                       setCurrentConvo={this.props.setCurrentConvo}
+                       setConvo={this.props.setConvo}
                        loggedInUser={this.props.loggedInUser}
                        friendship={friendship}
                        key={friendship._id} />;
@@ -97,7 +96,7 @@ Friendships.propTypes = FriendshipsPropTypes;
 
 const FriendshipPropTypes = {
   chatNavigateTo: PropTypes.func.isRequired,
-  setCurrentConvo: PropTypes.func.isRequired,
+  setConvo: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
   friendship: FriendshipSchema.isRequired,
 };
@@ -129,11 +128,10 @@ export class Friendship extends Component {
     const userID_1 = this.props.friendship.target_id;
     fetch(Config.BRAID_SERVER_URL + '/api/convoFromUsers/' + userID_0 + '/' + userID_1)
       .then(convoRes => {
-        console.log('convoRes', convoRes);
         return convoRes.json();
       })
       .then(convoJSON => {
-        this.props.setCurrentConvo(convoJSON);
+        this.props.setConvo(convoJSON);
         this.props.chatNavigateTo('messages');
       })
       .catch(err => console.log('get convo err', err));
