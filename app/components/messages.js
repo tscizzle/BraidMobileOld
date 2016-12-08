@@ -254,9 +254,9 @@ const messagesStyles = StyleSheet.create({
   messagesNavbarIcon: {
     marginRight: 20,
     marginLeft: 20,
-    height: 20,
-    width: 20,
-    fontSize: 20,
+    height: 30,
+    width: 30,
+    fontSize: 30,
     textAlign: 'center',
   },
   partnerUsername: {
