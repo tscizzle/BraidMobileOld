@@ -17,14 +17,11 @@ export default class Chat extends Component {
     super(props);
     this.state = {
       chatCurrentScene: 'friendships',
-      friendship: null,
       convo: null,
     };
   }
 
   _chatNavigateTo = chatScene => this.setState({chatCurrentScene: chatScene});
-
-  _setFriendship = convo => this.setState({friendship});
 
   _setConvo = convo => this.setState({convo});
 
@@ -38,8 +35,7 @@ export default class Chat extends Component {
                                 loggedInUser={this.props.loggedInUser} />
         }
         {this.state.convo && this.state.chatCurrentScene === 'messages' &&
-          <MessagesScene navigateTo={this.props.navigateTo}
-                         chatNavigateTo={this._chatNavigateTo}
+          <MessagesScene chatNavigateTo={this._chatNavigateTo}
                          loggedInUser={this.props.loggedInUser}
                          convo={this.state.convo} />
         }

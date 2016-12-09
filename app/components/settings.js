@@ -77,16 +77,14 @@ export class Settings extends Component {
   _onNotificationRegister = token => {
     this._refreshNotificationsEnabled();
     const userID = this.props.loggedInUser._id;
-    if (userID) {
-      const addDeviceRoute = Config.BRAID_SERVER_URL + '/api/addDeviceIDForUser/' + userID;
-      const deviceInfo = {device_id: token, platform: 'ios'};
-      fetch(addDeviceRoute, {
-        method: 'POST',
-        headers: jsonHeaders(),
-        body: JSON.stringify(deviceInfo),
-      })
-        .catch(err => console.log('add device err', err));
-    }
+    const addDeviceRoute = Config.BRAID_SERVER_URL + '/api/addDeviceIDForUser/' + userID;
+    const deviceInfo = {device_id: token, platform: 'ios'};
+    fetch(addDeviceRoute, {
+      method: 'POST',
+      headers: jsonHeaders(),
+      body: JSON.stringify(deviceInfo),
+    })
+      .catch(err => console.log('add device err', err));
   }
 
   _refreshNotificationsEnabled = () => {
