@@ -9,3 +9,14 @@ export default StrandSchema = PropTypes.shape({
   user_id_0: PropTypes.string.isRequired,
   user_id_1: PropTypes.string.isRequired,
 });
+
+export const StrandFactory = () => {
+  return {
+    _id: 'strandID',
+    convo_id: 'convoID',
+    color_number: 2,
+    time_created: '2016-05-18 20:30:07+00:00',
+    user_id_0: 'userID_0',
+    user_id_1: 'userID_1',
+  };
+};

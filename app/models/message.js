@@ -10,7 +10,18 @@ export default MessageSchema = PropTypes.shape({
   strand_id: PropTypes.string,
   time_sent: PropTypes.string.isRequired,
   time_saved: PropTypes.string.isRequired,
-  time_received: PropTypes.string,
   time_read: PropTypes.string,
   addressed: PropTypes.bool,
 });
+
+export const MessageFactory = () => {
+  return {
+    _id: 'messageID',
+    text: 'hey dude!',
+    convo_id: 'convoID',
+    receiver_id: 'receiverID',
+    strand_id: 'strandID',
+    time_sent: '2016-05-18 20:30:05+00:00',
+    time_saved: '2016-05-18 20:30:06+00:00',
+  };
+};

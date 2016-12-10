@@ -6,3 +6,11 @@ export default UserSchema = PropTypes.shape({
   username: PropTypes.string.isRequired,
   email: PropTypes.string,
 });
+
+export const UserFactory = () => {
+  return {
+    _id: 'userID',
+    username: 'billy',
+    email: 'billy@bob.com',
+  };
+};

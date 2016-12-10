@@ -7,3 +7,12 @@ export default FriendshipSchema = PropTypes.shape({
   target_id: PropTypes.string.isRequired,
   status: PropTypes.oneOf(['pending', 'accepted']).isRequired,
 });
+
+export const FriendshipFactory = () => {
+  return {
+    _id: 'friendshipID',
+    requester_id: 'requesterID',
+    target_id: 'targetID',
+    status: 'accepted',
+  };
+};
