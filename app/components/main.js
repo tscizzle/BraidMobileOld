@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import Button from 'react-native-button';
-import Config from 'react-native-config';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import _ from 'lodash';
 

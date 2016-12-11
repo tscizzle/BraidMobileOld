@@ -1,11 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, Image, PushNotificationIOS } from 'react-native';
 import Button from 'react-native-button';
-import Config from 'react-native-config';
 import Keychain from 'react-native-keychain';
 
 import UserSchema from '../models/user.js';
 import { jsonHeaders } from '../helpers.js';
+import braidFetch from '../api.js';
 import braidStyles from '../styles.js';
 
 
@@ -24,8 +24,8 @@ export default class SettingsContainer extends Component {
 
   componentWillMount() {
     const userID = this.props.loggedInUser._id;
-    const accountSettingsRoute = Config.BRAID_SERVER_URL + '/api/account_settings/' + userID;
-    fetch(accountSettingsRoute)
+    const accountSettingsRoute = '/api/account_settings/' + userID;
+    braidFetch(accountSettingsRoute)
       .then(accountSettingsRes => {
         return accountSettingsRes.json();
       })
@@ -77,9 +77,9 @@ export class Settings extends Component {
   _onNotificationRegister = token => {
     this._refreshNotificationsEnabled();
     const userID = this.props.loggedInUser._id;
-    const addDeviceRoute = Config.BRAID_SERVER_URL + '/api/addDeviceIDForUser/' + userID;
+    const addDeviceRoute = '/api/addDeviceIDForUser/' + userID;
     const deviceInfo = {device_id: token, platform: 'ios'};
-    fetch(addDeviceRoute, {
+    braidFetch(addDeviceRoute, {
       method: 'POST',
       headers: jsonHeaders(),
       body: JSON.stringify(deviceInfo),
@@ -94,7 +94,7 @@ export class Settings extends Component {
   }
 
   _pressLogout = () => {
-    fetch(Config.BRAID_SERVER_URL + '/logout')
+    braidFetch('/logout')
       .then(logoutRes => {
         if (logoutRes.status === 200) {
           Keychain.resetGenericPassword();

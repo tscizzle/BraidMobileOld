@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, ListView, TouchableOpacity, RefreshControl } from 'react-native';
 import Hr from 'react-native-hr';
-import Config from 'react-native-config';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import _ from 'lodash';
 
@@ -12,6 +11,7 @@ import MessageSchema from '../models/message.js';
 import { jsonHeaders,
          partnerFromConvo,
          filterMessagesByStrand } from '../helpers.js';
+import braidFetch from '../api.js';
 import braidStyles from '../styles.js';
 
 
@@ -34,7 +34,7 @@ export default class MessagesScene extends Component {
 
   componentWillMount() {
     const partnerID = partnerFromConvo(this.props.loggedInUser, this.props.convo);
-    fetch(Config.BRAID_SERVER_URL + '/api/username/' + partnerID)
+    braidFetch('/api/username/' + partnerID)
       .then(usernameRes => {
         return usernameRes.json();
       })
@@ -87,7 +87,7 @@ export class MessagesContainer extends Component {
   _refreshMessages = (callback = () => {}) => {
     const convoID = this.props.convo._id;
 
-    fetch(Config.BRAID_SERVER_URL + '/api/messages/' + convoID + '/' + DEFAULT_NUM_MESSAGES)
+    braidFetch('/api/messages/' + convoID + '/' + DEFAULT_NUM_MESSAGES)
       .then(messagesRes => {
         return messagesRes.json();
       })
@@ -100,7 +100,7 @@ export class MessagesContainer extends Component {
         callback();
       });
 
-    fetch(Config.BRAID_SERVER_URL + '/api/strands/' + convoID)
+    braidFetch('/api/strands/' + convoID)
       .then(strandsRes => {
         return strandsRes.json();
       })
@@ -154,13 +154,13 @@ export class MessagesNavbar extends Component {
     const convoID = this.props.convo._id;
     const timeRead = new Date();
     const numMessagesToGet = DEFAULT_NUM_MESSAGES;
-    const markMessagesAsReadRoute = Config.BRAID_SERVER_URL + '/api/markMessagesAsRead/' + convoID;
+    const markMessagesAsReadRoute = '/api/markMessagesAsRead/' + convoID;
     const markMessagesAsReadBody = {
       message_ids: messageIDs,
       time_read: timeRead,
       num_messages: numMessagesToGet,
     };
-    fetch(markMessagesAsReadRoute, {
+    braidFetch(markMessagesAsReadRoute, {
       method: 'POST',
       headers: jsonHeaders(),
       body: JSON.stringify(markMessagesAsReadBody),

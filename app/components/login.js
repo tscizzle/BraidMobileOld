@@ -2,9 +2,9 @@ import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, TextInput } from 'react-native';
 import Button from 'react-native-button';
 import Hr from 'react-native-hr';
-import Config from 'react-native-config';
 import Keychain from 'react-native-keychain';
 
+import braidFetch from '../api.js';
 import braidStyles from '../styles.js';
 
 
@@ -48,8 +48,7 @@ export default class Login extends Component {
 
   _pressLogin = () => {
     this.setState({loginDisabled: true});
-    const loginRoute = Config.BRAID_SERVER_URL + '/login';
-    fetch(loginRoute, {
+    braidFetch('/login', {
       method: 'POST',
       headers: {
         Accept: 'application/json',

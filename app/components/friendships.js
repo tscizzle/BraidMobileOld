@@ -1,11 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, ListView, TouchableOpacity } from 'react-native';
 import Hr from 'react-native-hr';
-import Config from 'react-native-config';
 
 import UserSchema from '../models/user.js';
 import FriendshipSchema from '../models/friendship.js';
 import { partnerFromFriendship } from '../helpers.js';
+import braidFetch from '../api.js';
 import braidStyles from '../styles.js';
 
 
@@ -24,7 +24,7 @@ export default class FriendshipsContainer extends Component {
 
   componentWillMount() {
     const userID = this.props.loggedInUser._id;
-    fetch(Config.BRAID_SERVER_URL + '/api/friendships/' + userID)
+    braidFetch('/api/friendships/' + userID)
       .then(friendshipsRes => {
         return friendshipsRes.json();
       })
@@ -112,7 +112,7 @@ export class Friendship extends Component {
 
   componentWillMount() {
     const partnerID = partnerFromFriendship(this.props.loggedInUser, this.props.friendship);
-    fetch(Config.BRAID_SERVER_URL + '/api/username/' + partnerID)
+    braidFetch('/api/username/' + partnerID)
       .then(usernameRes => {
         return usernameRes.json();
       })
@@ -126,7 +126,7 @@ export class Friendship extends Component {
   _pressFriendship = () => {
     const userID_0 = this.props.friendship.requester_id;
     const userID_1 = this.props.friendship.target_id;
-    fetch(Config.BRAID_SERVER_URL + '/api/convoFromUsers/' + userID_0 + '/' + userID_1)
+    braidFetch('/api/convoFromUsers/' + userID_0 + '/' + userID_1)
       .then(convoRes => {
         return convoRes.json();
       })
