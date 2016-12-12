@@ -5,7 +5,7 @@ import Hr from 'react-native-hr';
 import UserSchema from '../models/user.js';
 import FriendshipSchema from '../models/friendship.js';
 import { partnerFromFriendship } from '../helpers.js';
-import braidFetch from '../api.js';
+import { braidFetchJSON } from '../api.js';
 import braidStyles from '../styles.js';
 
 
@@ -24,10 +24,7 @@ export default class FriendshipsContainer extends Component {
 
   componentWillMount() {
     const userID = this.props.loggedInUser._id;
-    braidFetch('/api/friendships/' + userID)
-      .then(friendshipsRes => {
-        return friendshipsRes.json();
-      })
+    braidFetchJSON('/api/friendships/' + userID)
       .then(friendshipsJSON => {
         this.setState({friendships: friendshipsJSON});
       })
@@ -112,10 +109,7 @@ export class Friendship extends Component {
 
   componentWillMount() {
     const partnerID = partnerFromFriendship(this.props.loggedInUser, this.props.friendship);
-    braidFetch('/api/username/' + partnerID)
-      .then(usernameRes => {
-        return usernameRes.json();
-      })
+    braidFetchJSON('/api/username/' + partnerID)
       .then(usernameJSON => {
         const partnerUsername = usernameJSON.username;
         this.setState({partnerUsername});
@@ -126,10 +120,7 @@ export class Friendship extends Component {
   _pressFriendship = () => {
     const userID_0 = this.props.friendship.requester_id;
     const userID_1 = this.props.friendship.target_id;
-    braidFetch('/api/convoFromUsers/' + userID_0 + '/' + userID_1)
-      .then(convoRes => {
-        return convoRes.json();
-      })
+    braidFetchJSON('/api/convoFromUsers/' + userID_0 + '/' + userID_1)
       .then(convoJSON => {
         this.props.setConvo(convoJSON);
         this.props.chatNavigateTo('messages');

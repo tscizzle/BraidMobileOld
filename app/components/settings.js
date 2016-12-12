@@ -5,7 +5,7 @@ import Keychain from 'react-native-keychain';
 
 import UserSchema from '../models/user.js';
 import { jsonHeaders } from '../helpers.js';
-import braidFetch from '../api.js';
+import { braidFetch, braidFetchJSON } from '../api.js';
 import braidStyles from '../styles.js';
 
 
@@ -25,10 +25,7 @@ export default class SettingsContainer extends Component {
   componentWillMount() {
     const userID = this.props.loggedInUser._id;
     const accountSettingsRoute = '/api/account_settings/' + userID;
-    braidFetch(accountSettingsRoute)
-      .then(accountSettingsRes => {
-        return accountSettingsRes.json();
-      })
+    braidFetchJSON(accountSettingsRoute)
       .then(accountSettingsJSON => {
         const profilePicURL = accountSettingsJSON.profile_pic_url;
         if (profilePicURL) {

@@ -4,7 +4,7 @@ import Button from 'react-native-button';
 import Hr from 'react-native-hr';
 import Keychain from 'react-native-keychain';
 
-import braidFetch from '../api.js';
+import { braidFetchJSON } from '../api.js';
 import braidStyles from '../styles.js';
 
 
@@ -48,7 +48,7 @@ export default class Login extends Component {
 
   _pressLogin = () => {
     this.setState({loginDisabled: true});
-    braidFetch('/login', {
+    braidFetchJSON('/login', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -56,9 +56,6 @@ export default class Login extends Component {
       },
       body: JSON.stringify(this.state.loginForm),
     })
-      .then(loginRes => {
-        return loginRes.json();
-      })
       .then(loginJSON => {
         this.setState({loginDisabled: false});
         if (loginJSON.err) {

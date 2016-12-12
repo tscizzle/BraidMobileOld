@@ -11,7 +11,7 @@ import MessageSchema from '../models/message.js';
 import { jsonHeaders,
          partnerFromConvo,
          filterMessagesByStrand } from '../helpers.js';
-import braidFetch from '../api.js';
+import { braidFetch, braidFetchJSON } from '../api.js';
 import braidStyles from '../styles.js';
 
 
@@ -34,10 +34,7 @@ export default class MessagesScene extends Component {
 
   componentWillMount() {
     const partnerID = partnerFromConvo(this.props.loggedInUser, this.props.convo);
-    braidFetch('/api/username/' + partnerID)
-      .then(usernameRes => {
-        return usernameRes.json();
-      })
+    braidFetchJSON('/api/username/' + partnerID)
       .then(usernameJSON => {
         const partnerUsername = usernameJSON.username;
         this.setState({partnerUsername});
@@ -87,10 +84,7 @@ export class MessagesContainer extends Component {
   _refreshMessages = (callback = () => {}) => {
     const convoID = this.props.convo._id;
 
-    braidFetch('/api/messages/' + convoID + '/' + DEFAULT_NUM_MESSAGES)
-      .then(messagesRes => {
-        return messagesRes.json();
-      })
+    braidFetchJSON('/api/messages/' + convoID + '/' + DEFAULT_NUM_MESSAGES)
       .then(messagesJSON => {
         this.setState({messages: messagesJSON});
       })
@@ -100,10 +94,7 @@ export class MessagesContainer extends Component {
         callback();
       });
 
-    braidFetch('/api/strands/' + convoID)
-      .then(strandsRes => {
-        return strandsRes.json();
-      })
+    braidFetchJSON('/api/strands/' + convoID)
       .then(strandsJSON => {
         this.setState({strands: strandsJSON});
         const strandMap = _.reduce(strandsJSON, (strandMapSoFar, strand) => {
@@ -150,7 +141,11 @@ export class MessagesNavbar extends Component {
   _pressBackToFriendships = () => this.props.chatNavigateTo('friendships');
 
   _pressMarkMessagesAsRead = () => {
-    const messageIDs = _.map(this.props.visibleMessages, '_id');
+    const messagesToMark = _.filter(this.props.visibleMessages, message => {
+      // message is from the partner and is not yet marked read
+      return message.receiver_id === this.props.loggedInUser._id && !message.time_read;
+    });
+    const messageIDs = _.map(messagesToMark, '_id');
     const convoID = this.props.convo._id;
     const timeRead = new Date();
     const numMessagesToGet = DEFAULT_NUM_MESSAGES;
