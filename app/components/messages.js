@@ -141,17 +141,19 @@ export class MessagesNavbar extends Component {
   _pressBackToFriendships = () => this.props.chatNavigateTo('friendships');
 
   _pressMarkMessagesAsRead = () => {
+    const convoID = this.props.convo._id;
     const messagesToMark = _.filter(this.props.visibleMessages, message => {
       // message is from the partner and is not yet marked read
       return message.receiver_id === this.props.loggedInUser._id && !message.time_read;
     });
     const messageIDs = _.map(messagesToMark, '_id');
-    const convoID = this.props.convo._id;
+    const userID = this.props.loggedInUser._id;
     const timeRead = new Date();
     const numMessagesToGet = DEFAULT_NUM_MESSAGES;
     const markMessagesAsReadRoute = '/api/markMessagesAsRead/' + convoID;
     const markMessagesAsReadBody = {
       message_ids: messageIDs,
+      user_id: userID,
       time_read: timeRead,
       num_messages: numMessagesToGet,
     };
