@@ -9,6 +9,7 @@ import MessagesScene from './messages.js';
 
 const ChatPropTypes = {
   navigateTo: PropTypes.func.isRequired,
+  setPartnerUsername: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
 };
 
@@ -36,6 +37,7 @@ export default class Chat extends Component {
         }
         {this.state.convo && this.state.chatCurrentScene === 'messages' &&
           <MessagesScene chatNavigateTo={this._chatNavigateTo}
+                         setPartnerUsername={this.props.setPartnerUsername}
                          loggedInUser={this.props.loggedInUser}
                          convo={this.state.convo} />
         }

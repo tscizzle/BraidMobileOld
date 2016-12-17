@@ -18,6 +18,7 @@ export default class BraidMobile extends Component {
     this.state = {
       currentScene: 'login',
       loggedInUser: null,
+      partnerUsername: null,
     };
 
     PushNotificationIOS.getInitialNotification().then(this._onNotification);
@@ -49,13 +50,17 @@ export default class BraidMobile extends Component {
 
   _setLoggedInUser = user => this.setState({loggedInUser: user});
 
+  _setPartnerUsername = username => this.setState({partnerUsername: username});
+
   render() {
     return (
       <View style={mainStyles.mainContainer}>
         <Navbar navigateTo={this._navigateTo}
+                partnerUsername={this.state.partnerUsername}
                 loggedInUser={this.state.loggedInUser} />
         <Content navigateTo={this._navigateTo}
                  setLoggedInUser={this._setLoggedInUser}
+                 setPartnerUsername={this._setPartnerUsername}
                  currentScene={this.state.currentScene}
                  loggedInUser={this.state.loggedInUser} />
       </View>
@@ -66,6 +71,7 @@ export default class BraidMobile extends Component {
 
 const NavbarPropTypes = {
   navigateTo: PropTypes.func.isRequired,
+  partnerUsername: PropTypes.string,
   loggedInUser: UserSchema,
 };
 
@@ -87,6 +93,11 @@ export class Navbar extends Component {
           <Image style={mainStyles.navbarLogo}
                  source={require('../assets/img/poop_logo.jpeg')} />
         </TouchableOpacity>
+        {this.props.loggedInUser && this.props.partnerUsername &&
+          <Text style={[braidStyles.text, mainStyles.partnerUsername]}>
+            {this.props.partnerUsername}
+          </Text>
+        }
         {this.props.loggedInUser &&
           <TouchableOpacity onPress={this._pressBraidProfile}>
             <Icon style={[braidStyles.icon, mainStyles.navbarSettings]} name='gear' />
@@ -103,6 +114,7 @@ Navbar.propTypes = NavbarPropTypes;
 const ContentPropTypes = {
   navigateTo: PropTypes.func.isRequired,
   setLoggedInUser: PropTypes.func.isRequired,
+  setPartnerUsername: PropTypes.func.isRequired,
   currentScene: PropTypes.string.isRequired,
   loggedInUser: UserSchema,
 };
@@ -122,6 +134,7 @@ export class Content extends Component {
         }
         {this.props.loggedInUser && this.props.currentScene === 'chat' &&
           <Chat navigateTo={this.props.navigateTo}
+                setPartnerUsername={this.props.setPartnerUsername}
                 loggedInUser={this.props.loggedInUser} />
         }
       </View>
@@ -150,6 +163,10 @@ const mainStyles = StyleSheet.create({
   navbarLogo: {
     height: 40,
     width: 40,
+  },
+  partnerUsername: {
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   navbarSettings: {
     fontSize: 40,

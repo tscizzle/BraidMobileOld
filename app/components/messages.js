@@ -22,22 +22,18 @@ STRAND_COLOR_ORDER[-1] = '#DDD';
 
 const MessagesScenePropTypes = {
   chatNavigateTo: PropTypes.func.isRequired,
+  setPartnerUsername: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
   convo: ConvoSchema.isRequired,
 };
 
 export default class MessagesScene extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {partnerUsername: null};
-  }
-
   componentWillMount() {
     const partnerID = partnerFromConvo(this.props.loggedInUser, this.props.convo);
     braidFetchJSON('/api/username/' + partnerID)
       .then(usernameJSON => {
         const partnerUsername = usernameJSON.username;
-        this.setState({partnerUsername});
+        this.props.setPartnerUsername(partnerUsername);
       })
       .catch(err => console.log('get partner username err', err));
   }
@@ -46,8 +42,7 @@ export default class MessagesScene extends Component {
     return (
       <MessagesContainer chatNavigateTo={this.props.chatNavigateTo}
                          loggedInUser={this.props.loggedInUser}
-                         convo={this.props.convo}
-                         partnerUsername={this.state.partnerUsername} />
+                         convo={this.props.convo} />
     );
   }
 }
@@ -59,7 +54,6 @@ const MessagesContainerPropTypes = {
   chatNavigateTo: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
   convo: ConvoSchema.isRequired,
-  partnerUsername: PropTypes.string,
 };
 
 export class MessagesContainer extends Component {
@@ -108,12 +102,11 @@ export class MessagesContainer extends Component {
     return (
       <View style={messagesStyles.messagesScene}>
         <MessagesNavbar chatNavigateTo={this.props.chatNavigateTo}
+                        refreshMessages={this._refreshMessages}
                         loggedInUser={this.props.loggedInUser}
                         convo={this.props.convo}
-                        partnerUsername={this.props.partnerUsername}
                         visibleMessages={visibleMessages} />
         <Messages setCurrentStrandID={this._setCurrentStrandID}
-                  refreshMessages={this._refreshMessages}
                   strandMap={this.state.strandMap}
                   loggedInUser={this.props.loggedInUser}
                   visibleMessages={visibleMessages}
@@ -129,9 +122,9 @@ MessagesContainer.propTypes = MessagesContainerPropTypes;
 
 MessagesNavbarPropTypes = {
   chatNavigateTo: PropTypes.func.isRequired,
+  refreshMessages: PropTypes.func.isRequired,
   loggedInUser: UserSchema.isRequired,
   convo: ConvoSchema.isRequired,
-  partnerUsername: PropTypes.string,
   visibleMessages: PropTypes.arrayOf(MessageSchema).isRequired,
 };
 
@@ -169,9 +162,9 @@ export class MessagesNavbar extends Component {
         <TouchableOpacity onPress={this._pressBackToFriendships}>
           <Icon style={[braidStyles.icon, messagesStyles.messagesNavbarIcon]} name='angle-left' />
         </TouchableOpacity>
-        <Text style={[braidStyles.text, messagesStyles.partnerUsername]}>
-          {this.props.partnerUsername}
-        </Text>
+        <TouchableOpacity onPress={this.props.refreshMessages}>
+          <Icon style={[braidStyles.icon, messagesStyles.messagesNavbarIcon]} name='refresh' />
+        </TouchableOpacity>
         <TouchableOpacity onPress={this._pressMarkMessagesAsRead}>
           <Icon style={[braidStyles.icon, messagesStyles.messagesNavbarIcon]} name='check' />
         </TouchableOpacity>
@@ -185,7 +178,6 @@ MessagesNavbar.propTypes = MessagesNavbarPropTypes;
 
 const MessagesPropTypes = {
   setCurrentStrandID: PropTypes.func.isRequired,
-  refreshMessages: PropTypes.func.isRequired,
   strandMap: PropTypes.object.isRequired,
   loggedInUser: UserSchema.isRequired,
   visibleMessages: PropTypes.arrayOf(MessageSchema).isRequired,
@@ -308,10 +300,6 @@ const messagesStyles = StyleSheet.create({
     width: 55,
     fontSize: 30,
     textAlign: 'center',
-  },
-  partnerUsername: {
-    fontSize: 20,
-    fontWeight: 'bold',
   },
   messagesList: {
     flex: 1,
