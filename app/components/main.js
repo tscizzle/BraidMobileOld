@@ -1,10 +1,11 @@
 import React, { Component, PropTypes } from 'react';
-import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, Image, TouchableOpacity, PushNotificationIOS } from 'react-native';
 import Button from 'react-native-button';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import _ from 'lodash';
 
 import UserSchema from '../models/user.js';
+import { braidFetchJSON } from '../api.js';
 import braidStyles from '../styles.js';
 import Login from './login.js';
 import SettingsContainer from './settings.js';
@@ -18,6 +19,30 @@ export default class BraidMobile extends Component {
       currentScene: 'login',
       loggedInUser: null,
     };
+
+    PushNotificationIOS.getInitialNotification().then(this._onNotification);
+    PushNotificationIOS.addEventListener('notification', this._onNotification);
+  }
+
+  componentWillUnmount() {
+    PushNotificationIOS.removeEventListener('notification', this._onNotification);
+  }
+
+  _onNotification = notification => {
+    if (notification) {
+      const convoID = notification.getData().convo_id;
+      if (convoID) {
+        braidFetchJSON('/api/convo/' + convoID)
+          .then(convoJSON => {
+            this._navigateTo('chat');
+            // TODO: open the convo for convoID, need to somehow pass convoID down through the components
+            // const chatComponent = null;
+            // chatComponent._setConvo(convoJSON);
+            // chatComponent._chatNavigateTo('messages');
+          })
+          .catch(err => console.log('get convo err', err));
+      }
+    }
   }
 
   _navigateTo = scene => this.setState({currentScene: scene});

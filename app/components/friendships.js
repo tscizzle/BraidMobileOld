@@ -63,18 +63,13 @@ export class Friendships extends Component {
     this.setState({friendshipsDataSource: this.state.friendshipsDataSource.cloneWithRows(newFriendships)});
   }
 
-  _renderFriendship = friendship => {
-    return <Friendship chatNavigateTo={this.props.chatNavigateTo}
-                       setConvo={this.props.setConvo}
-                       loggedInUser={this.props.loggedInUser}
-                       friendship={friendship}
-                       key={friendship._id} />;
-  }
+  _renderFriendship = friendship => <Friendship chatNavigateTo={this.props.chatNavigateTo}
+                                                setConvo={this.props.setConvo}
+                                                loggedInUser={this.props.loggedInUser}
+                                                friendship={friendship}
+                                                key={friendship._id} />;
 
-  _renderFriendshipSeparator = (sectionID, rowID) => {
-    return <Hr lineColor='#DDD'
-               key={rowID} />;
-  }
+  _renderFriendshipSeparator = (sectionID, rowID) => <Hr lineColor='#DDD' key={rowID} />;
 
   render() {
     return (

@@ -111,7 +111,7 @@ const loginStyles = StyleSheet.create({
     marginTop: 40,
   },
   errorMessage: {
-    height: 20,
+    height: 60,
     margin: 10,
     color: 'red',
   },

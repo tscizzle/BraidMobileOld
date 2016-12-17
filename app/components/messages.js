@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { StyleSheet, View, Text, ListView, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, ListView, TouchableOpacity } from 'react-native';
 import Hr from 'react-native-hr';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import _ from 'lodash';
@@ -77,9 +77,7 @@ export class MessagesContainer extends Component {
     this._refreshMessages();
   }
 
-  _setCurrentStrandID = strandID => {
-    this.setState({currentStrandID: strandID});
-  };
+  _setCurrentStrandID = strandID => this.setState({currentStrandID: strandID});
 
   _refreshMessages = (callback = () => {}) => {
     const convoID = this.props.convo._id;
@@ -206,39 +204,36 @@ export class Messages extends Component {
     };
   }
 
-  _onPullMessages = () => {
-    this.setState({refreshingMessages: true});
-    this.props.refreshMessages(() => {
-      this.setState({refreshingMessages: false});
-    });
+  componentDidUpdate() {
+    const scrollDistance = this.state.messagesFooterY - this.state.messagesListHeight;
+    this.refs.messagesListView.scrollTo({y: scrollDistance, animated: false});
   }
 
-  _pressMessageList = () => {
-    this.props.setCurrentStrandID(null);
-  }
+  _pressMessageList = () => this.props.setCurrentStrandID(null);
 
-  _renderMessage = message => {
-    return <Message setCurrentStrandID={this.props.setCurrentStrandID}
-                    strandMap={this.props.strandMap}
-                    loggedInUser={this.props.loggedInUser}
-                    currentStrandID={this.props.currentStrandID}
-                    message={message}
-                    key={message._id} />;
-  }
+  _renderMessage = message => <Message setCurrentStrandID={this.props.setCurrentStrandID}
+                                       strandMap={this.props.strandMap}
+                                       loggedInUser={this.props.loggedInUser}
+                                       currentStrandID={this.props.currentStrandID}
+                                       message={message}
+                                       key={message._id} />
+
+  _renderFooter = () => <View onLayout={this._saveFooterY}></View>
+
+  _saveFooterY = event => this.setState({messagesFooterY: event.nativeEvent.layout.y});
+
+  _saveHeight = event => this.setState({messagesListHeight : event.nativeEvent.layout.height});
 
   render() {
     const messagesDataSource = this.state.messagesDataSource.cloneWithRows(this.props.visibleMessages);
-    const messagesRefreshControl = <RefreshControl refreshing={this.state.refreshingMessages}
-                                                   onRefresh={this._onPullMessages}
-                                                   title='Camaahhn...'
-                                                   titleColor='#777' />
     return (
       <TouchableOpacity style={messagesStyles.messagesList}
                         onPress={this._pressMessageList}>
-        <ListView ref='messagesListView'
+        <ListView ref="messagesListView"
                   dataSource={messagesDataSource}
                   renderRow={this._renderMessage}
-                  refreshControl={messagesRefreshControl}
+                  renderFooter={this._renderFooter}
+                  onLayout={this._saveHeight}
                   enableEmptySections={true} />
       </TouchableOpacity>
     );
@@ -278,7 +273,9 @@ export class Message extends Component {
     return (
       <TouchableOpacity style={[messagesStyles.messageRow, messagesStyles[messageClass]]}
                         onPress={this._pressMessage}>
-        <View style={[messagesStyles.messageBubble, messagesStyles[messageBubbleClass], {backgroundColor: messageColor}]}>
+        <View style={[messagesStyles.messageBubble,
+                      messagesStyles[messageBubbleClass],
+                      {backgroundColor: messageColor}]}>
           <Text style={[braidStyles.text, messagesStyles.messageText]}>
             {this.props.message.text}
           </Text>
