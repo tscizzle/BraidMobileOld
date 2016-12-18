@@ -38,6 +38,10 @@ export default class MessagesScene extends Component {
       .catch(err => console.log('get partner username err', err));
   }
 
+  componentWillUnmount() {
+    this.props.setPartnerUsername(null);
+  }
+
   render() {
     return (
       <MessagesContainer chatNavigateTo={this.props.chatNavigateTo}

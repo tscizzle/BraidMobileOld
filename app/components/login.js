@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { StyleSheet, View, Text, TextInput } from 'react-native';
+import { StyleSheet, View, Text, TextInput, PushNotificationIOS } from 'react-native';
 import Button from 'react-native-button';
 import Hr from 'react-native-hr';
 import Keychain from 'react-native-keychain';
@@ -23,7 +23,7 @@ export default class Login extends Component {
       },
       loginDisabled: false,
       loginError: null,
-      autoLoginFailed: false,
+      autoLoginAttempted: false,
     };
   }
 
@@ -34,7 +34,7 @@ export default class Login extends Component {
       })
       .catch(err => {
         console.log('get credentials err', err);
-        this.setState({autoLoginFailed: true});
+        this.setState({autoLoginAttempted: true});
       });
   }
 
@@ -64,7 +64,11 @@ export default class Login extends Component {
         } else {
           this.props.setLoggedInUser(loginJSON.user);
           Keychain.setGenericPassword(this.state.loginForm.username, this.state.loginForm.password);
-          this.props.navigateTo('settings');
+          // TODO: if notifications enabled, go to chat instead of settings
+          PushNotificationIOS.checkPermissions(permissions => {
+            const targetScene = permissions.alert && permissions.badge ? 'chat' : 'settings';
+            this.props.navigateTo(targetScene);
+          });
         }
       })
       .catch(err => {
@@ -76,28 +80,29 @@ export default class Login extends Component {
 
   render() {
     return (
-      /* TODO: instead of the login form put a loading screen here unless this.state.autoLoginFailed is true */
-      <View style={loginStyles.loginContainer}>
-        <View style={braidStyles.formContainer}>
-          <TextInput style={braidStyles.textInput}
-                     onChangeText={this._typeIntoUsername}
-                     value={this.state.loginForm.username}
-                     placeholder='Username' />
-          <Hr lineColor='#DDD' />
-          <TextInput style={braidStyles.textInput}
-                     onChangeText={this._typeIntoPassword}
-                     value={this.state.loginForm.password}
-                     placeholder='Password'
-                     secureTextEntry={true} />
+      /* TODO: instead of the login form put a loading screen here unless this.state.autoLoginAttempted is true */
+      this.state.autoLoginAttempted &&
+        <View style={loginStyles.loginContainer}>
+          <View style={braidStyles.formContainer}>
+            <TextInput style={braidStyles.textInput}
+                       onChangeText={this._typeIntoUsername}
+                       value={this.state.loginForm.username}
+                       placeholder='Username' />
+            <Hr lineColor='#DDD' />
+            <TextInput style={braidStyles.textInput}
+                       onChangeText={this._typeIntoPassword}
+                       value={this.state.loginForm.password}
+                       placeholder='Password'
+                       secureTextEntry={true} />
+          </View>
+          <Text style={[braidStyles.text, loginStyles.errorMessage]}>{this.state.loginError}</Text>
+          <Button style={[braidStyles.button, braidStyles.primaryButton]}
+                  styleDisabled={braidStyles.disabledButton}
+                  onPress={this._pressLogin}
+                  disabled={this.state.loginDisabled}>
+            Login
+          </Button>
         </View>
-        <Text style={[braidStyles.text, loginStyles.errorMessage]}>{this.state.loginError}</Text>
-        <Button style={[braidStyles.button, braidStyles.primaryButton]}
-                styleDisabled={braidStyles.disabledButton}
-                onPress={this._pressLogin}
-                disabled={this.state.loginDisabled}>
-          Login
-        </Button>
-      </View>
     );
   }
 }
