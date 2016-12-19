@@ -232,6 +232,7 @@ export class Messages extends Component {
                   renderRow={this._renderMessage}
                   renderFooter={this._renderFooter}
                   onLayout={this._saveHeight}
+                  pageSize={DEFAULT_NUM_MESSAGES}
                   enableEmptySections={true} />
       </TouchableOpacity>
     );
