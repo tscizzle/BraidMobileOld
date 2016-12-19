@@ -202,7 +202,9 @@ export class Messages extends Component {
 
   componentDidUpdate() {
     const scrollDistance = this.state.messagesFooterY - this.state.messagesListHeight;
-    this.refs.messagesListView.scrollTo({y: scrollDistance, animated: false});
+    if (scrollDistance > 0) {
+      this.refs.messagesListView.scrollTo({y: scrollDistance, animated: false});
+    }
   }
 
   _pressMessageList = () => this.props.setCurrentStrandID(null);
