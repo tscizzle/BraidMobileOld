@@ -27,7 +27,7 @@ export default class Login extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     Keychain.getGenericPassword()
       .then(credentials => {
         this.setState({loginForm: credentials}, this._pressLogin);

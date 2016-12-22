@@ -22,7 +22,7 @@ export default class FriendshipsContainer extends Component {
     this.state = {friendships: []};
   }
 
-  componentWillMount() {
+  componentDidMount() {
     const userID = this.props.loggedInUser._id;
     braidFetchJSON('/api/friendships/' + userID)
       .then(friendshipsJSON => {
@@ -102,7 +102,7 @@ export class Friendship extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     const partnerID = partnerFromFriendship(this.props.loggedInUser, this.props.friendship);
     braidFetchJSON('/api/username/' + partnerID)
       .then(usernameJSON => {

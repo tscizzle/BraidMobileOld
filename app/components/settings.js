@@ -22,7 +22,7 @@ export default class SettingsContainer extends Component {
     this.state = {profilePicURL: null};
   }
 
-  componentWillMount() {
+  componentDidMount() {
     const userID = this.props.loggedInUser._id;
     const accountSettingsRoute = '/api/account_settings/' + userID;
     braidFetchJSON(accountSettingsRoute)

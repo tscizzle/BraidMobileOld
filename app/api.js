@@ -1,7 +1,6 @@
 import Config from 'react-native-config';
 
 
-// Config is only defined in dev (ideally would detect dev or prod a more robust way)
 const BRAID_SERVER_URL = Config ? Config.BRAID_SERVER_URL : 'https://www.braid.space';
 
 export const braidFetch = (...args) => {
