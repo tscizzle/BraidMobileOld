@@ -276,11 +276,6 @@ const MessagePropTypes = {
 };
 
 export class Message extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
-
   _pressMessage = () => {
     const nextStrandID = !this.props.currentStrandID ? this.props.message.strand_id : null;
     this.props.setCurrentStrandID(nextStrandID);
