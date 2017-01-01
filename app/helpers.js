@@ -22,6 +22,15 @@ export const partnerFromConvo = (user, convo) => {
   return userID === userID0 ? userID1 : userID0;
 };
 
+export const convoFromFriendship = (friendship, convos) => {
+  const matchingConvo = _.find(convos, convo => {
+    var convoPair = [convo.user_id_0, convo.user_id_1].sort();
+    var friendshipPair = [friendship.requester_id, friendship.target_id].sort();
+    return _.isEqual(convoPair, friendshipPair);
+  });
+  return matchingConvo;
+};
+
 export const filterMessagesByStrand = (messages, strandID) => {
   const filteredMessages = _.filter(messages, message => {
     return !strandID || message.strand_id === strandID;

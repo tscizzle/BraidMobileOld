@@ -1,10 +1,13 @@
 import React, { Component, PropTypes } from 'react';
 import { StyleSheet, View, Text, ListView, TouchableOpacity } from 'react-native';
 import Hr from 'react-native-hr';
+import _ from 'lodash';
 
 import UserSchema from '../models/user.js';
 import FriendshipSchema from '../models/friendship.js';
-import { partnerFromFriendship } from '../helpers.js';
+import ConvoSchema from '../models/convo.js';
+import { partnerFromFriendship,
+         convoFromFriendship } from '../helpers.js';
 import { braidFetchJSON } from '../api.js';
 import braidStyles from '../styles.js';
 
@@ -26,7 +29,18 @@ export default class FriendshipsContainer extends Component {
     const userID = this.props.loggedInUser._id;
     braidFetchJSON('/api/friendships/' + userID)
       .then(friendshipsJSON => {
-        this.setState({friendships: friendshipsJSON});
+        braidFetchJSON('/api/convos/' + userID)
+          .then(convosJSON => {
+            const acceptedFriendships = _.filter(friendshipsJSON, friendship => friendship.status === 'accepted');
+            const sortedFriendships = _.sortBy(acceptedFriendships, friendship => {
+              const convo = convoFromFriendship(friendship, convosJSON);
+              if (convo) {
+                return -(new Date(convo.last_message_time));
+              }
+            });
+            this.setState({friendships: sortedFriendships});
+          })
+          .catch(err => console.log('get convos err', err));
       })
       .catch(err => console.log('get friendships err', err));
   }
