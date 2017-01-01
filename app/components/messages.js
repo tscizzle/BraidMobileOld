@@ -207,6 +207,7 @@ export class Messages extends Component {
     this.state = {
       messagesDataSource,
       refreshingMessages: false,
+      // for being able to scroll to the bottom
       messagesListHeight: 0,
       messagesFooterY: 0,
     };
@@ -230,9 +231,9 @@ export class Messages extends Component {
 
   _renderFooter = () => <View onLayout={this._saveFooterY}></View>
 
-  _saveFooterY = event => this.setState({messagesFooterY: event.nativeEvent.layout.y});
+  _saveHeight = event => this.setState({messagesListHeight: event.nativeEvent.layout.height});
 
-  _saveHeight = event => this.setState({messagesListHeight : event.nativeEvent.layout.height});
+  _saveFooterY = event => this.setState({messagesFooterY: event.nativeEvent.layout.y});
 
   _increaseNumMessages = () => {
     this.setState({refreshingMessages: true});
