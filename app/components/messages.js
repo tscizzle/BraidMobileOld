@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
-import { StyleSheet, View, Text, ListView, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, TextInput, ListView, TouchableOpacity, RefreshControl } from 'react-native';
+import Button from 'react-native-button';
 import Hr from 'react-native-hr';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import _ from 'lodash';
@@ -9,14 +10,14 @@ import ConvoSchema from '../models/convo.js';
 import MessageSchema from '../models/message.js';
 import { jsonHeaders,
          partnerFromConvo,
-         filterMessagesByStrand } from '../helpers.js';
+         filterMessagesByStrand,
+         thisColorNumber,
+         STRAND_COLOR_ORDER      } from '../helpers.js';
 import { braidFetch, braidFetchJSON } from '../api.js';
 import braidStyles from '../styles.js';
 
 
 const DEFAULT_NUM_MESSAGES = 30;
-const STRAND_COLOR_ORDER = ['#EFBFFF', '#9EEFD0', '#FFFAAD', '#FFC99E', '#F2969F'];
-STRAND_COLOR_ORDER[-1] = '#DDD';
 
 
 const MessagesScenePropTypes = {
@@ -88,7 +89,6 @@ export class MessagesContainer extends Component {
   _refreshMessages = () => {
     const convoID = this.props.convo._id;
     const numMessages = this.state.numMessages;
-
     braidFetchJSON('/api/messages/' + convoID + '/' + numMessages)
       .then(messagesJSON => {
         this.setState({messages: messagesJSON});
@@ -96,7 +96,6 @@ export class MessagesContainer extends Component {
       .catch(err => {
         console.log('get messages err', err);
       });
-
     braidFetchJSON('/api/strands/' + convoID)
       .then(strandsJSON => {
         const strandMap = _.reduce(strandsJSON, (strandMapSoFar, strand) => {
@@ -124,8 +123,15 @@ export class MessagesContainer extends Component {
                   visibleMessages={visibleMessages}
                   currentStrandID={this.state.currentStrandID}
                   numMessages={this.state.numMessages} />
+        <SendMessageContainer setCurrentStrandID={this._setCurrentStrandID}
+                              refreshMessages={this._refreshMessages}
+                              strandMap={this.state.strandMap}
+                              loggedInUser={this.props.loggedInUser}
+                              convo={this.props.convo}
+                              messages={this.state.messages}
+                              currentStrandID={this.state.currentStrandID}
+                              numMessages={this.state.numMessages} />
       </View>
-
     );
   }
 }
@@ -308,6 +314,115 @@ export class Message extends Component {
 Message.propTypes = MessagePropTypes;
 
 
+const SendMessageContainerPropTypes = {
+  setCurrentStrandID: PropTypes.func.isRequired,
+  refreshMessages: PropTypes.func.isRequired,
+  strandMap: PropTypes.object.isRequired,
+  loggedInUser: UserSchema.isRequired,
+  convo: ConvoSchema.isRequired,
+  messages: PropTypes.arrayOf(MessageSchema).isRequired,
+  currentStrandID: PropTypes.string,
+  numMessages: PropTypes.number.isRequired,
+};
+
+export class SendMessageContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      messageForm: {
+        text: '',
+      },
+      sendDisabled: false,
+    };
+  }
+
+  _typeIntoText = textInput => {
+    this.setState({messageForm: {...this.state.messageForm, text: textInput}});
+  }
+
+  _pressSend = () => {
+    const afterSend = () => {
+      this.props.refreshMessages();
+      this.setState({messageForm: {text: ''}});
+      this.setState({sendDisabled: false});
+    };
+
+    this.setState({sendDisabled: true});
+    const partnerID = partnerFromConvo(this.props.loggedInUser, this.props.convo);
+    const messageData = {
+      text: this.state.messageForm.text,
+      convo_id: this.props.convo._id,
+      sender_id: this.props.loggedInUser._id,
+      receiver_id: partnerID,
+      time_sent: new Date(),
+    };
+    if (this.props.currentStrandID) {
+      messageData.strand_id = this.props.currentStrandID;
+      const numMessages = this.props.numMessages;
+      braidFetchJSON('/api/messages/' + numMessages, {
+        method: 'POST',
+        headers: jsonHeaders(),
+        body: JSON.stringify(messageData),
+      })
+        .then(afterSend)
+        .catch(err => {
+          console.log('send message on existing strand err', err);
+          afterSend();
+        });
+    } else {
+      const colorNumber = thisColorNumber(this.props.messages, this.props.strandMap);
+      const strandData = {
+        convo_id: this.props.convo._id,
+        color_number: colorNumber,
+        time_created: new Date(),
+        user_id_0: this.props.convo.user_id_0,
+        user_id_1: this.props.convo.user_id_1,
+      };
+      const messageCreationBody = {
+        message: messageData,
+        strand: strandData,
+        strand_message_ids: [],
+        num_messages: this.props.numMessages,
+      };
+      braidFetchJSON('/api/messagesNewStrand', {
+        method: 'POST',
+        headers: jsonHeaders(),
+        body: JSON.stringify(messageCreationBody),
+      })
+        .then(dataJSON => {
+          const new_strand_id = dataJSON.new_strand._id;
+          this.props.setCurrentStrandID(new_strand_id);
+        })
+        .then(afterSend)
+        .catch(err => {
+          console.log('send message on new strand err', err);
+          afterSend();
+        });
+    }
+  }
+
+  render() {
+    return (
+      <View style={messagesStyles.sendMessageContainer}>
+        <TextInput style={[messagesStyles.sendInput]}
+                   onChangeText={this._typeIntoText}
+                   value={this.state.messageForm.text}
+                   placeholder='Type a message...'
+                   multiline={true} />
+        <Button style={[braidStyles.button, braidStyles.primaryButton, messagesStyles.sendButton]}
+                styleDisabled={braidStyles.disabledButton}
+                onPress={this._pressSend}
+                disabled={this.state.sendDisabled}>
+          Send
+        </Button>
+      </View>
+    );
+  }
+}
+
+SendMessageContainer.propTypes = SendMessageContainerPropTypes;
+
+
 const messagesStyles = StyleSheet.create({
   messagesScene: {
     flex: 1,
@@ -330,7 +445,7 @@ const messagesStyles = StyleSheet.create({
     textAlign: 'center',
   },
   messagesList: {
-    flex: 1,
+    flex: 7,
     padding: 10,
   },
   messageRow: {
@@ -357,5 +472,28 @@ const messagesStyles = StyleSheet.create({
   },
   messageText: {
     fontSize: 15,
+  },
+  sendMessageContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    margin: 5,
+  },
+  sendInput: {
+    flex: 5,
+    marginRight: 2.5,
+    paddingTop: 5,
+    paddingRight: 10,
+    paddingBottom: 5,
+    paddingLeft: 10,
+    backgroundColor: '#FFF',
+    borderColor: '#DDD',
+    borderWidth: 1,
+    borderRadius: 10,
+    fontSize: 15,
+  },
+  sendButton: {
+    flex: 1,
+    marginLeft: 2.5,
   },
 });

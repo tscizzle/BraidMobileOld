@@ -37,3 +37,33 @@ export const filterMessagesByStrand = (messages, strandID) => {
   });
   return filteredMessages;
 };
+
+export const thisColorNumber = (messages, strandMap) => {
+  /* returns the least recently used color_number */
+  var messageColorNumbers = _.map(messages, message => {
+    if (message.strand_id && strandMap[message.strand_id]) {
+      return strandMap[message.strand_id].color_number;
+    }
+  });
+  var thisColorIndex = _.minBy(_.range(STRAND_COLOR_ORDER.length), color_number => {
+    return _.lastIndexOf(messageColorNumbers, color_number);
+  });
+  return thisColorIndex;
+};
+
+export const STRAND_COLOR_ORDER = [
+  '#EFBFFF',
+  '#9EEFD0',
+  '#FFFAAD',
+  '#FFC99E',
+  '#F2969F',
+];
+STRAND_COLOR_ORDER[-1] = '#DDD';
+
+export const COLOR_TO_FADED_MAP = {
+  '#EFBFFF': '#F2DBFF',
+  '#9EEFD0': '#CEF2ED',
+  '#FFFAAD': '#EDFFD9',
+  '#FFC99E': '#FFE6C2',
+  '#F2969F': '#F2C2AE',
+};
