@@ -61,10 +61,10 @@ export default class Login extends Component {
         if (loginJSON.err) {
           const errorMessage = loginJSON.err.message;
           this.setState({loginError: errorMessage});
+          Keychain.resetGenericPassword();
         } else {
           this.props.setLoggedInUser(loginJSON.user);
           Keychain.setGenericPassword(this.state.loginForm.username, this.state.loginForm.password);
-          // TODO: if notifications enabled, go to chat instead of settings
           PushNotificationIOS.checkPermissions(permissions => {
             const targetScene = permissions.alert && permissions.badge ? 'chat' : 'settings';
             this.props.navigateTo(targetScene);
@@ -72,9 +72,10 @@ export default class Login extends Component {
         }
       })
       .catch(err => {
-        this.setState({loginDisabled: false});
         console.log('login err', err);
+        this.setState({loginDisabled: false});
         this.setState({loginError: JSON.stringify(err)});
+        Keychain.resetGenericPassword();
       });
   }
 
